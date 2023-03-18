@@ -19,17 +19,58 @@ __fastcall TForm1::TForm1(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
-bool isBMPFile(const AnsiString &s) {
+
+
+
+/**
+ * getIllegalCharacter
+ * 
+ *  Get the first illegal character in a string.
+ *  This ensures we dont try to open a file with a UTF8 character that is
+ *  incorrectly encoded as a single (and probably illegal) char.
+ *
+ */
+char getIllegalCharacter(const AnsiString &s) {
+    if (s.Pos("?") > 0) {
+        return '?';
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * isLegalFileName
+ *
+ *  Check if the file name is legal. There are only a few cases to check for.
+ */
+bool isLegalFileName(const AnsiString &s)
+{
+    // Report any illegal chars and exit if any are found
+    char illegalChar = getIllegalCharacter(s);
+    if (illegalChar != 0) {
+        return false;
+    }
+
+    // Could also check if its a device file name, etc...
+
+
+    return true;
+}
+
+bool isBMPFile(const AnsiString &s)
+{
   int index = s.Pos(".bmp");
   return (index > 0);
 }
 
-bool isSoundFile(const AnsiString &s) {
+bool isSoundFile(const AnsiString &s)
+{
   int index = s.Pos(".wav");
   return (index > 0);
 }
 
-FileType __fastcall TForm1::GetFileType(const AnsiString &fileName) {
+FileType __fastcall TForm1::GetFileType(const AnsiString &fileName)
+{
     if (isSoundFile(fileName)) {
         return T_SOUND;
     } else if (isBMPFile(fileName)) {
@@ -37,7 +78,6 @@ FileType __fastcall TForm1::GetFileType(const AnsiString &fileName) {
     } else {
         return T_NULL;
     }
-
 }
 
 
@@ -53,7 +93,8 @@ void __fastcall TForm1::DisplaySoundFile()
     WaveInfo wi;
     FILE *infile = fopen(tbxFileName->Text.c_str(), "rb");
     if (infile == NULL) {
-        MessageBox(NULL, "Cannot open that file!", "Error", MB_OK);
+        Application->MessageBox("Unable to open file",
+                                "Error", MB_OK | MB_ICONASTERISK);
         return;
     }
     bool acceptableFile = read_pcm_wav_info(infile, tbxFileName->Text.c_str(), &wi);
@@ -73,7 +114,8 @@ void __fastcall TForm1::DisplaySoundFile()
 						wi.NumSamples);
         tbxFileInfo->Text = fileInfo;
     } else {
-        MessageBox(NULL, "Unsupported WAV format!", "Error", MB_OK);
+        Application->MessageBox("Unsupported WAV format!",
+                                "Error", MB_OK | MB_ICONASTERISK);
         fclose(infile);
         return;
     }
@@ -135,7 +177,8 @@ void __fastcall TForm1::DisplayImageFile()
     ScrollBox1->Show();
     DBChart1->Hide();
     if (!isBMPFile(OpenDialog1->FileName)) {
-        MessageBox(NULL, "Please select a BMP file", "Error", MB_OK);
+        Application->MessageBox("Please select a BMP file",
+                                "Error", MB_OK | MB_ICONASTERISK);
         return;
     }
     try {
@@ -147,10 +190,19 @@ void __fastcall TForm1::DisplayImageFile()
 
 void __fastcall TForm1::Button1Click(TObject *Sender)
 {
+    // Open dialog to get the desired file
     bool success = OpenDialog1->Execute();
     if (!success) {
         return;
     }
+    if (!isLegalFileName(OpenDialog1->FileName)) {
+        OpenDialog1->CleanupInstance();
+        Application->MessageBox("Filepath contains illegal characters!",
+                                "Error", MB_OK | MB_ICONASTERISK);
+        return;
+    }
+
+    // Put the FileName in the text box
     tbxFileName->Text = OpenDialog1->FileName;
 
     FileType ft = GetFileType(tbxFileName->Text);
@@ -159,9 +211,9 @@ void __fastcall TForm1::Button1Click(TObject *Sender)
     } else if (ft == T_IMAGE) {
         DisplayImageFile();
     } else {
-        MessageBox(NULL, "Please select a BMP or WAV file", "Error", MB_OK);
+        Application->MessageBox("Please select a BMP or WAV file",
+                                "Error", MB_OK | MB_ICONASTERISK);
     }
-
 
 }
 //---------------------------------------------------------------------------

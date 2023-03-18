@@ -31,7 +31,6 @@ __published:	// IDE-managed Components
     TDBChart *DBChart1;
     TLineSeries *Series1;
     TPanel *Panel1;
-    TSplitter *Splitter1;
     TRichEdit *tbxFileInfo;
     TLabel *Label1;
     TEdit *tbxFileName;
@@ -47,6 +46,7 @@ __published:	// IDE-managed Components
     TMenuItem *Extract1;
     TPanel *Panel3;
     TCheckBox *CheckBox1;
+    TLabel *Label3;
     void __fastcall Button1Click(TObject *Sender);
     void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations

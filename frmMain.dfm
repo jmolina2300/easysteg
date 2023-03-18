@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 344
   Top = 222
-  Width = 528
+  Width = 597
   Height = 400
   Caption = 'Easysteg v0.0.0'
   Color = clBtnFace
@@ -20,7 +20,7 @@ object Form1: TForm1
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 520
+    Width = 589
     Height = 201
     Align = alTop
     BevelOuter = bvNone
@@ -73,7 +73,7 @@ object Form1: TForm1
   object Panel2: TPanel
     Left = 0
     Top = 201
-    Width = 520
+    Width = 589
     Height = 148
     Align = alClient
     BevelOuter = bvNone
@@ -81,9 +81,9 @@ object Form1: TForm1
     TabOrder = 1
     object DBChart1: TDBChart
       Left = 0
-      Top = 0
-      Width = 520
-      Height = 148
+      Top = 33
+      Width = 589
+      Height = 115
       AllowPanning = pmNone
       BackWall.Brush.Color = clWhite
       BackWall.Brush.Style = bsClear
@@ -119,22 +119,23 @@ object Form1: TForm1
     end
     object ScrollBox1: TScrollBox
       Left = 0
-      Top = 0
-      Width = 520
-      Height = 148
+      Top = 33
+      Width = 589
+      Height = 115
+      HorzScrollBar.Tracking = True
       VertScrollBar.ButtonSize = 12
       VertScrollBar.ThumbSize = 12
+      VertScrollBar.Tracking = True
       Align = alClient
-      AutoSize = True
       BevelInner = bvNone
       BevelOuter = bvNone
+      DockSite = True
       TabOrder = 1
       object StegImage: TImage
-        Left = 106
+        Left = 0
         Top = 0
-        Width = 410
-        Height = 144
-        Align = alClient
+        Width = 534
+        Height = 537
         AutoSize = True
         ParentShowHint = False
         Picture.Data = {
@@ -27060,35 +27061,36 @@ object Form1: TForm1
           FFFFFFFF0000}
         ShowHint = False
       end
-      object Splitter1: TSplitter
-        Left = 105
-        Top = 0
-        Width = 1
-        Height = 144
-        Cursor = crHSplit
-        ResizeStyle = rsLine
+    end
+    object Panel3: TPanel
+      Left = 0
+      Top = 0
+      Width = 589
+      Height = 33
+      Align = alTop
+      BevelOuter = bvNone
+      BorderStyle = bsSingle
+      TabOrder = 2
+      object Label3: TLabel
+        Left = 8
+        Top = 8
+        Width = 70
+        Height = 13
+        Caption = 'Image Preview'
       end
-      object Panel3: TPanel
-        Left = 0
-        Top = 0
-        Width = 105
-        Height = 144
-        Align = alLeft
-        BevelOuter = bvNone
+      object CheckBox1: TCheckBox
+        Left = 120
+        Top = 8
+        Width = 97
+        Height = 17
+        Caption = 'Zoom Fit'
         TabOrder = 0
-        object CheckBox1: TCheckBox
-          Left = 16
-          Top = 24
-          Width = 97
-          Height = 17
-          Caption = 'Stretch'
-          TabOrder = 0
-        end
       end
     end
   end
   object OpenDialog1: TOpenDialog
-    Filter = 'Bitmap Files (*.bmp)|*.bmp|WAV Files (*.wav)|*.wav'
+    Filter = 'Bitmap Files (*.bmp)|*.*|WAV Files (*.wav)|*.wav'
+    FilterIndex = 0
     Left = 352
     Top = 16
   end
