@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "frmMain.h"
+#include "frmEncode.h"
 #include "wavread.h"
 
 
@@ -12,9 +13,9 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TForm1 *Form1;
+TFormMain *FormMain;
 //---------------------------------------------------------------------------
-__fastcall TForm1::TForm1(TComponent* Owner)
+__fastcall TFormMain::TFormMain(TComponent* Owner)
     : TForm(Owner)
 {
 }
@@ -69,7 +70,7 @@ bool isSoundFile(const AnsiString &s)
   return (index > 0);
 }
 
-FileType __fastcall TForm1::GetFileType(const AnsiString &fileName)
+FileType __fastcall TFormMain::GetFileType(const AnsiString &fileName)
 {
     if (isSoundFile(fileName)) {
         return T_SOUND;
@@ -81,7 +82,7 @@ FileType __fastcall TForm1::GetFileType(const AnsiString &fileName)
 }
 
 
-void __fastcall TForm1::DisplaySoundFile()
+void __fastcall TFormMain::DisplaySoundFile()
 {
     ScrollBox1->Hide();
     DBChart1->Show();
@@ -172,7 +173,7 @@ void __fastcall TForm1::DisplaySoundFile()
     fclose (infile);
 }
 
-void __fastcall TForm1::DisplayImageFile()
+void __fastcall TFormMain::DisplayImageFile()
 {
     ScrollBox1->Show();
     DBChart1->Hide();
@@ -188,7 +189,7 @@ void __fastcall TForm1::DisplayImageFile()
     catch (Exception &e) { }
 }
 
-void __fastcall TForm1::Button1Click(TObject *Sender)
+void __fastcall TFormMain::Button1Click(TObject *Sender)
 {
     // Open dialog to get the desired file
     bool success = OpenDialog1->Execute();
@@ -219,12 +220,32 @@ void __fastcall TForm1::Button1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TForm1::FormCreate(TObject *Sender)
+void __fastcall TFormMain::FormCreate(TObject *Sender)
 {
-    this->fileType = T_NULL;  
+    this->fileType = T_NULL;
 }
 //---------------------------------------------------------------------------
 
 
 
+
+
+
+
+void __fastcall TFormMain::Embed1Click(TObject *Sender)
+{
+    // Get the secret message to encode from the user
+    FormEncode->ShowModal();
+    if (FormEncode->ModalResult != mrOk) {
+        return;
+    }
+    if (FormEncode->txtMessage->Text.Length() <= 0) {
+        return;
+    }
+
+    // Do something with secret message
+
+    
+}
+//---------------------------------------------------------------------------
 

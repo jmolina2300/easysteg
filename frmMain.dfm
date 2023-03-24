@@ -1,8 +1,8 @@
-object Form1: TForm1
-  Left = 344
-  Top = 222
-  Width = 597
-  Height = 400
+object FormMain: TFormMain
+  Left = 376
+  Top = 184
+  Width = 849
+  Height = 540
   Caption = 'Easysteg v0.0.0'
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -20,7 +20,7 @@ object Form1: TForm1
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 589
+    Width = 841
     Height = 201
     Align = alTop
     BevelOuter = bvNone
@@ -73,17 +73,17 @@ object Form1: TForm1
   object Panel2: TPanel
     Left = 0
     Top = 201
-    Width = 589
-    Height = 148
+    Width = 841
+    Height = 288
     Align = alClient
     BevelOuter = bvNone
     Caption = 'Panel2'
     TabOrder = 1
     object DBChart1: TDBChart
       Left = 0
-      Top = 33
-      Width = 589
-      Height = 115
+      Top = 25
+      Width = 841
+      Height = 263
       AllowPanning = pmNone
       BackWall.Brush.Color = clWhite
       BackWall.Brush.Style = bsClear
@@ -119,17 +119,18 @@ object Form1: TForm1
     end
     object ScrollBox1: TScrollBox
       Left = 0
-      Top = 33
-      Width = 589
-      Height = 115
+      Top = 25
+      Width = 841
+      Height = 263
       HorzScrollBar.Tracking = True
-      VertScrollBar.ButtonSize = 12
       VertScrollBar.ThumbSize = 12
       VertScrollBar.Tracking = True
       Align = alClient
       BevelInner = bvNone
       BevelOuter = bvNone
       DockSite = True
+      Color = clMedGray
+      ParentColor = False
       TabOrder = 1
       object StegImage: TImage
         Left = 0
@@ -27065,22 +27066,22 @@ object Form1: TForm1
     object Panel3: TPanel
       Left = 0
       Top = 0
-      Width = 589
-      Height = 33
+      Width = 841
+      Height = 25
       Align = alTop
       BevelOuter = bvNone
       BorderStyle = bsSingle
       TabOrder = 2
       object Label3: TLabel
         Left = 8
-        Top = 8
+        Top = 4
         Width = 70
         Height = 13
         Caption = 'Image Preview'
       end
       object CheckBox1: TCheckBox
         Left = 120
-        Top = 8
+        Top = 4
         Width = 97
         Height = 17
         Caption = 'Zoom Fit'
@@ -27104,6 +27105,7 @@ object Form1: TForm1
       Caption = 'Actions'
       object Embed1: TMenuItem
         Caption = 'Encode'
+        OnClick = Embed1Click
       end
       object Extract1: TMenuItem
         Caption = 'Decode'

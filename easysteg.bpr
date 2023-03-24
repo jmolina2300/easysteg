@@ -4,12 +4,12 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="easysteg.exe"/>
-    <OBJFILES value="easysteg.obj frmMain.obj wavread.obj"/>
+    <OBJFILES value="easysteg.obj frmMain.obj wavread.obj frmEncode.obj"/>
     <RESFILES value="easysteg.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) frmMain.dfm"/>
+    <RESDEPEN value="$(RESFILES) frmMain.dfm frmEncode.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value="vcl.lib rtl.lib teedb.lib tee.lib dbrtl.lib"/>
@@ -57,8 +57,9 @@
       <FILE FILENAME="easysteg.res" FORMNAME="" UNITNAME="easysteg.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="easysteg.cpp" FORMNAME="" UNITNAME="easysteg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="easysteg.cpp" FORMNAME="" UNITNAME="easysteg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="frmMain.cpp" FORMNAME="Form1" UNITNAME="frmMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="frmMain.cpp" FORMNAME="FormMain" UNITNAME="frmMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="wavread.cpp" FORMNAME="" UNITNAME="wavread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="frmEncode.cpp" FORMNAME="FormEncode" UNITNAME="frmEncode" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
