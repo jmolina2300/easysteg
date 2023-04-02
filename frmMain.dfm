@@ -27086,6 +27086,7 @@ object FormMain: TFormMain
         Height = 17
         Caption = 'Zoom Fit'
         TabOrder = 0
+        OnClick = CheckBox1Click
       end
     end
   end

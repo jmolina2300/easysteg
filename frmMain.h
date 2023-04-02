@@ -50,6 +50,7 @@ __published:	// IDE-managed Components
     void __fastcall Button1Click(TObject *Sender);
     void __fastcall FormCreate(TObject *Sender);
     void __fastcall Embed1Click(TObject *Sender);
+    void __fastcall CheckBox1Click(TObject *Sender);
 private:	// User declarations
     FileType fileType;
     FileType __fastcall GetFileType(const AnsiString &s);

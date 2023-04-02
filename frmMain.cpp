@@ -249,3 +249,17 @@ void __fastcall TFormMain::Embed1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
+{
+    if (CheckBox1->Checked) {
+        StegImage->Proportional = true; // =  CheckBox1->Checked;
+        StegImage->Align = alClient;
+    } else {
+
+        StegImage->Proportional = false; // =  CheckBox1->Checked;
+        StegImage->Align = alNone;
+    }
+    StegImage->Repaint();    
+}
+//---------------------------------------------------------------------------
+
