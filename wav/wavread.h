@@ -2,6 +2,7 @@
 #define wavreadH
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -12,6 +13,7 @@
 #define is_data_chunk(x) !strncmp(x, "data", 4)
 
 #define AUDIO_WINDOW_MS         25
+
 
 
 
@@ -42,6 +44,8 @@ typedef struct {
 } WaveHeader;
 
 
+
+
 /**
  * Structure to hold information about a wave file.
  * 
@@ -59,6 +63,15 @@ typedef struct {
 }  WaveInfo;
 
 
+/**
+ * Complete WAV file
+ */
+typedef struct {
+    WaveInfo     Info;
+    void        *Data;    
+} WaveFile;
+
+
 
 
 int write_pcm_wav_header (
@@ -72,6 +85,9 @@ int write_pcm_wav_header (
 int read_pcm_wav_info(FILE *providedFile, char *infilename, WaveInfo *);
 
 
+int wav_read_from_file(WaveFile *wf, const char *infilename);
+
+int wav_write_to_file(WaveFile *wf, const char *outfilename);
 
 
 
