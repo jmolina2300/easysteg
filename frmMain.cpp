@@ -6,6 +6,7 @@
 #include "frmMain.h"
 #include "frmEncode.h"
 #include "wavread.h"
+#include "bmpread.h"
 
 
 #define PLOT_SCALE 2000
@@ -187,6 +188,25 @@ void __fastcall TFormMain::DisplayImageFile()
         tbxFileName->Text = OpenDialog1->FileName;
     }
     catch (Exception &e) { }
+
+    BmpImage bi;
+
+    bmp_read_from_file(&bi, tbxFileName->Text.c_str());
+
+    // Display information about the BMP file in the text box
+    AnsiString fileInfo;
+	fileInfo.printf(" Name: %s\n"
+					" Bits: %d\n"
+					" FileSize: %d\n"
+					" DataSize: %d\n"
+					" Pixels: %d\n",
+
+					ExtractFileName(OpenDialog1->FileName),
+					33,
+					33,
+					33,
+					33);
+    tbxFileInfo->Text = fileInfo;
 }
 
 void __fastcall TFormMain::Button1Click(TObject *Sender)

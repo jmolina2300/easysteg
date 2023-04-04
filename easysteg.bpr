@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="easysteg.exe"/>
-    <OBJFILES value="easysteg.obj frmMain.obj wavread.obj frmEncode.obj"/>
+    <OBJFILES value="easysteg.obj frmMain.obj wavread.obj frmEncode.obj bmpread.obj"/>
     <RESFILES value="easysteg.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
@@ -60,6 +60,7 @@
       <FILE FILENAME="frmMain.cpp" FORMNAME="FormMain" UNITNAME="frmMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="wavread.cpp" FORMNAME="" UNITNAME="wavread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="frmEncode.cpp" FORMNAME="FormEncode" UNITNAME="frmEncode" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="bmpread.cpp" FORMNAME="" UNITNAME="bmpread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
