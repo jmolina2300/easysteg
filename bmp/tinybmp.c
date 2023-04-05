@@ -237,7 +237,7 @@ int bmp_read_from_file(BmpImage *image, const char *filename)
 
 
 
-void bmp_destroy_image(BmpImage *image)
+void bmp_destroy(BmpImage *image)
 {
   free(image->data);
   image->data = NULL;

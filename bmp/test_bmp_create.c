@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
         printf("FAILURE: Failed to write BMP file\n");
         return 1;
     }
-    bmp_destroy_image(&image);
+    bmp_destroy(&image);
     printf("SUCCESS: Created BMP file\n");
 
 
@@ -34,7 +34,7 @@ int main(int argc, char * argv[])
         printf("FAILURE: Failed to write BMP file\n");
         return 1;
     }
-    bmp_destroy_image(&image2);
+    bmp_destroy(&image2);
 
     printf("SUCCESS: Read BMP file\n");
 

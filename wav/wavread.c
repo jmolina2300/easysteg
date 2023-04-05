@@ -239,23 +239,18 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
     if (wf == NULL) {
         return 0;
     }
-
-    /* Did they give us a file or do we need to open it ourselves?
-     */
-    if (infilename != NULL) {
-        infile = fopen(infilename, "rb");
-    }
-    else {
+    if (infilename == NULL) {
         return 0;
     }
-
+    
+    // Open the WAV file
+    infile = fopen(infilename, "rb");
     if (infile == NULL) {
         fprintf(stderr, "Error: Cannot open input file %s\n", infilename);
         return 0;
     }
 
-    /* Check if it is a valid WAV file
-     */
+    // Check if it is a valid WAV file
     if (!fread(&riffChunkHeader, sizeof(RiffChunkHeader), 1, infile) ||
         strncmp(riffChunkHeader.ckID, "RIFF", 4) ||
         strncmp(riffChunkHeader.formType, "WAVE", 4)) {
@@ -373,17 +368,16 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
     wf->Info.DataChunkSize = chunkHeader.ckSize;
 
     // Read in the samples
-    wf->Data = (int16_t *)malloc(numSamples * sizeof(int16_t));
+    wf->Data = (int16_t *)calloc(numSamples, sizeof(int16_t));
     if (wf->Data == NULL) {
         fprintf(stderr, "Error: Cannot allocate memory for samples\n");
         fclose(infile);
         return 0;
     }
 
-    if (!fread(wf->Data, waveHeader.BlockAlign, numSamples, infile)) {
-        fprintf(stderr, "Error: Cannot read samples from file\n");
-        fclose(infile);
-        return 0;
+    // read in the samples 
+    while (fread(wf->Data, waveHeader.BlockAlign, numSamples, infile)) {
+        ;
     }
 
     fclose(infile);
@@ -405,19 +399,28 @@ int wav_write_to_file(WaveFile *wf, const char *outfilename)
     int header_success = write_pcm_wav_header(outfile, wf->Info.NumSamples, wf->Info.NumChannels, 2, wf->Info.SampleRate);
     if (!header_success) {
         fprintf(stderr, "Error: Cannot write header to file\n");
+        fclose(outfile);
         return 0;
     }
 
 
     // Write samples to the file
-    int write_success = fwrite(wf->Data, wf->Info.BlockAlign, wf->Info.NumSamples, outfile);
-    if (!write_success) {
-        fprintf(stderr, "Error: Cannot write samples to file\n");
-        return 0;
+    int numSamplesWritten = 0;
+    while (numSamplesWritten < wf->Info.NumSamples) {
+        numSamplesWritten += fwrite(wf->Data, wf->Info.BlockAlign, wf->Info.NumSamples - numSamplesWritten, outfile);
     }
 
     fclose(outfile);
 
     return 1;
+}
+
+
+void wav_destroy(WaveFile *wf)
+{
+    if (wf->Data != NULL) {
+        free(wf->Data);
+    }
+    wf->Data = NULL;
 }
    

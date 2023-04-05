@@ -41,6 +41,7 @@ typedef struct {
   uint8_t r;
 } Pixel;
 
+
 // BMP complete file structure
 typedef struct {
   BmpFileHeader  header;
@@ -58,7 +59,7 @@ int bmp_create_canvas(BmpImage *image, uint32_t color);
 int bmp_write_to_file(BmpImage *image, const char *filename);
 int bmp_read_from_file(BmpImage *image, const char *filename);
 
-void bmp_destroy_image(BmpImage *image);
+void bmp_destroy(BmpImage *image);
 
 
 

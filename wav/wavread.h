@@ -90,5 +90,6 @@ int wav_read_from_file(WaveFile *wf, const char *infilename);
 int wav_write_to_file(WaveFile *wf, const char *outfilename);
 
 
+void wav_destroy(WaveFile *wf);
 
 #endif

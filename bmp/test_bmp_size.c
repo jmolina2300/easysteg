@@ -37,7 +37,7 @@ int main(int argc, char * argv[])
                "  datasize: %d\n"
                , size, image.header.filesize, image.info.imagesize, image.info.imagesize * 3);
         
-        bmp_destroy_image(&image);
+        bmp_destroy(&image);
     } 
 
     // Remove the files
