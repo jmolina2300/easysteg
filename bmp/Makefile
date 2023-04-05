@@ -1,7 +1,7 @@
 CC=gcc -Wall
 CFLAGS= -g
 
-all: test_bmp_create test_bmp_size test_bmp_rewrite test_bmp_encode
+all: test_bmp_create test_bmp_size test_bmp_rewrite test_bmp_encode test_bmp_decode
 
 tinybmp.o: tinybmp.c
 	$(CC) $(CFLAGS) -c tinybmp.c
@@ -17,6 +17,10 @@ test_bmp_rewrite: test_bmp_rewrite.o tinybmp.o
 
 test_bmp_encode: test_bmp_encode.o tinybmp.o
 	$(CC) $(CFLAGS) -o test_bmp_encode.x test_bmp_encode.o tinybmp.o
+
+test_bmp_decode: test_bmp_decode.o tinybmp.o
+	$(CC) $(CFLAGS) -o test_bmp_decode.x test_bmp_decode.o tinybmp.o
+
 
 clean:
 	rm -fR *.o
