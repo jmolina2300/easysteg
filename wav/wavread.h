@@ -53,13 +53,13 @@ typedef struct {
  * Just for the sake of convenience and readability.
  */
 typedef struct {
-    double      Duration;
-    uint16_t    BitsPerSample;
-    uint16_t    NumChannels;
-    uint16_t    BlockAlign;
-    uint32_t    NumSamples;
-    uint32_t    SampleRate;
-    uint32_t    DataChunkSize;
+    double      duration;
+    uint16_t    bitsPerSample;
+    uint16_t    numChannels;
+    uint16_t    blockAlign;
+    uint32_t    numSamples;
+    uint32_t    sampleRate;
+    uint32_t    dataChunkSize;
 }  WaveInfo;
 
 
@@ -67,8 +67,8 @@ typedef struct {
  * Complete WAV file
  */
 typedef struct {
-    WaveInfo     Info;
-    void        *Data;    
+    WaveInfo     info;
+    void        *data;    
 } WaveFile;
 
 

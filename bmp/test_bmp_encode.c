@@ -77,7 +77,7 @@ int main(int argc, char * argv[]) {
     int len = strlen(secret);
 
     // See if the file is big enough to hold the secret
-    int cover_size = image.info.imagesize;
+    int cover_size = image.info.datasize;
     if (cover_size < len * 8) {
         printf("Cover file is not large enough to hold that message.\n");
         return 1;

@@ -6,13 +6,13 @@
 
 void print_wav_info(WaveFile *wf)
 {
-    printf("  Duration: %f\n", wf->Info.Duration);
-    printf("  BitsPerSample: %d\n", wf->Info.BitsPerSample);
-    printf("  NumChannels: %d\n", wf->Info.NumChannels);
-    printf("  BlockAlign: %d\n", wf->Info.BlockAlign);
-    printf("  NumSamples: %d\n", wf->Info.NumSamples);
-    printf("  SampleRate: %d\n", wf->Info.SampleRate);
-    printf("  DataChunkSize: %d\n", wf->Info.DataChunkSize);
+    printf("  Duration: %f\n", wf->info.duration);
+    printf("  BitsPerSample: %d\n", wf->info.bitsPerSample);
+    printf("  NumChannels: %d\n", wf->info.numChannels);
+    printf("  BlockAlign: %d\n", wf->info.blockAlign);
+    printf("  NumSamples: %d\n", wf->info.numSamples);
+    printf("  SampleRate: %d\n", wf->info.sampleRate);
+    printf("  DataChunkSize: %d\n", wf->info.dataChunkSize);
     printf("\n");
 }
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
 
     // Get pointer to the sample data
-    int16_t *samples = (int16_t *)wf.Data;
+    int16_t *samples = (int16_t *)wf.data;
 
     // Get secret message from user
     char secret[1000];
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     int len = strlen(secret);
 
     // See if the WAV file is big enough to hold the secret
-    int cover_size = wf.Info.DataChunkSize;
+    int cover_size = wf.info.dataChunkSize;
     if (cover_size < len * 8) {
         printf("Cover file is not large enough.\n");
         return 1;

@@ -35,7 +35,7 @@ int main(int argc, char * argv[])
                "  file size: %d\n"
                "  numPixels: %d\n"
                "  datasize: %d\n"
-               , size, image.header.filesize, image.info.imagesize, image.info.imagesize * 3);
+               , size, image.header.filesize, image.info.datasize, image.info.datasize * 3);
         
         bmp_destroy(&image);
     } 

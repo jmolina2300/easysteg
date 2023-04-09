@@ -11,13 +11,13 @@
 
 void print_wav_info(WaveFile *wf)
 {
-    printf("  Duration: %f\n", wf->Info.Duration);
-    printf("  BitsPerSample: %d\n", wf->Info.BitsPerSample);
-    printf("  NumChannels: %d\n", wf->Info.NumChannels);
-    printf("  BlockAlign: %d\n", wf->Info.BlockAlign);
-    printf("  NumSamples: %d\n", wf->Info.NumSamples);
-    printf("  SampleRate: %d\n", wf->Info.SampleRate);
-    printf("  DataChunkSize: %d\n", wf->Info.DataChunkSize);
+    printf("  Duration: %f\n", wf->info.duration);
+    printf("  BitsPerSample: %d\n", wf->info.bitsPerSample);
+    printf("  NumChannels: %d\n", wf->info.numChannels);
+    printf("  BlockAlign: %d\n", wf->info.blockAlign);
+    printf("  NumSamples: %d\n", wf->info.numSamples);
+    printf("  SampleRate: %d\n", wf->info.sampleRate);
+    printf("  DataChunkSize: %d\n", wf->info.dataChunkSize);
     printf("\n");
 }
 

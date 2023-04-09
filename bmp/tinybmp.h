@@ -27,7 +27,7 @@ typedef struct {
   uint16_t  planes;
   uint16_t  bits;
   uint32_t  compression;
-  uint32_t  imagesize;
+  uint32_t  datasize;
   uint32_t  xresolution;
   uint32_t  yresolution;
   uint32_t  ncolors;

@@ -211,12 +211,12 @@ int read_pcm_wav_info(FILE *providedFile, char *infilename, WaveInfo *wi)
 
 
 	if (wi != NULL) {
-        wi->Duration = ((double)numSamples / waveHeader.SampleRate);
-        wi->BitsPerSample = waveHeader.BitsPerSample;
-        wi->NumChannels = waveHeader.NumChannels;
-        wi->SampleRate = waveHeader.SampleRate;
-        wi->NumSamples =  numSamples;
-        wi->BlockAlign = waveHeader.BlockAlign;
+        wi->duration = ((double)numSamples / waveHeader.SampleRate);
+        wi->bitsPerSample = waveHeader.BitsPerSample;
+        wi->numChannels = waveHeader.NumChannels;
+        wi->sampleRate = waveHeader.SampleRate;
+        wi->numSamples =  numSamples;
+        wi->blockAlign = waveHeader.BlockAlign;
     }
 
     return 1;
@@ -359,24 +359,25 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
     }
 
 
-    wf->Info.Duration = ((double)numSamples / waveHeader.SampleRate);
-    wf->Info.BitsPerSample = waveHeader.BitsPerSample;
-    wf->Info.NumChannels = waveHeader.NumChannels;
-    wf->Info.SampleRate = waveHeader.SampleRate;
-    wf->Info.NumSamples =  numSamples;
-    wf->Info.BlockAlign = waveHeader.BlockAlign;
-    wf->Info.DataChunkSize = chunkHeader.ckSize;
+    wf->info.duration = ((double)numSamples / waveHeader.SampleRate);
+    wf->info.bitsPerSample = waveHeader.BitsPerSample;
+    wf->info.numChannels = waveHeader.NumChannels;
+    wf->info.sampleRate = waveHeader.SampleRate;
+    wf->info.numSamples =  numSamples;
+    wf->info.blockAlign = waveHeader.BlockAlign;
+    wf->info.dataChunkSize = chunkHeader.ckSize;
 
     // Read in the samples
-    wf->Data = (int16_t *)calloc(numSamples, sizeof(int16_t));
-    if (wf->Data == NULL) {
+    size_t numDataBytes = chunkHeader.ckSize;
+    wf->data = (int16_t*)calloc(numDataBytes, 1);
+    if (wf->data == NULL) {
         fprintf(stderr, "Error: Cannot allocate memory for samples\n");
         fclose(infile);
         return 0;
     }
 
     // read in the samples 
-    while (fread(wf->Data, waveHeader.BlockAlign, numSamples, infile)) {
+    while (fread(wf->data, waveHeader.BlockAlign, numSamples, infile)) {
         ;
     }
 
@@ -396,7 +397,7 @@ int wav_write_to_file(WaveFile *wf, const char *outfilename)
         return 0;
     }
 
-    int header_success = write_pcm_wav_header(outfile, wf->Info.NumSamples, wf->Info.NumChannels, 2, wf->Info.SampleRate);
+    int header_success = write_pcm_wav_header(outfile, wf->info.numSamples, wf->info.numChannels, 2, wf->info.sampleRate);
     if (!header_success) {
         fprintf(stderr, "Error: Cannot write header to file\n");
         fclose(outfile);
@@ -406,8 +407,8 @@ int wav_write_to_file(WaveFile *wf, const char *outfilename)
 
     // Write samples to the file
     int numSamplesWritten = 0;
-    while (numSamplesWritten < wf->Info.NumSamples) {
-        numSamplesWritten += fwrite(wf->Data, wf->Info.BlockAlign, wf->Info.NumSamples - numSamplesWritten, outfile);
+    while (numSamplesWritten < wf->info.numSamples) {
+        numSamplesWritten += fwrite(wf->data, wf->info.blockAlign, wf->info.numSamples - numSamplesWritten, outfile);
     }
 
     fclose(outfile);
@@ -418,9 +419,9 @@ int wav_write_to_file(WaveFile *wf, const char *outfilename)
 
 void wav_destroy(WaveFile *wf)
 {
-    if (wf->Data != NULL) {
-        free(wf->Data);
+    if (wf->data != NULL) {
+        free(wf->data);
     }
-    wf->Data = NULL;
+    wf->data = NULL;
 }
    

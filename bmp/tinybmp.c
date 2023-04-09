@@ -16,15 +16,14 @@ void bmp_create_header(BmpImage *image, int width, int height, int bits)
   image->info.planes = 1;
   image->info.bits = 24;
   image->info.compression = 0;
-  //image->info.imagesize = (width * height) * SIZE_PIXEL_24BIT;
-  image->info.imagesize = ((((width * 24) + 31) & ~31) >> 3) * height;
+  image->info.datasize = ((((width * 24) + 31) & ~31) >> 3) * height;
   image->info.xresolution = 0;
   image->info.yresolution = 0;
   image->info.ncolors = 0;
   image->info.importantcolors = 0;
 
   // Now, compute the full file size 
-  image->header.filesize = image->header.offset + image->info.imagesize;
+  image->header.filesize = image->header.offset + image->info.datasize;
 }
 
 void write_header(BmpImage *image, FILE *file)
@@ -43,7 +42,7 @@ void write_header(BmpImage *image, FILE *file)
   fwrite( &image->info.planes, 2, 1, file);
   fwrite( &image->info.bits, 2, 1, file);
   fwrite( &image->info.compression, 4, 1, file);
-  fwrite( &image->info.imagesize, 4, 1, file);
+  fwrite( &image->info.datasize, 4, 1, file);
   fwrite( &image->info.xresolution, 4, 1, file);
   fwrite( &image->info.yresolution, 4, 1, file);
   fwrite( &image->info.ncolors, 4, 1, file);
@@ -72,8 +71,8 @@ void read_header(BmpImage *image, FILE *file)
   fread( &image->info.bits, 2, 1, file);
   fread( &image->info.compression, 4, 1, file);
 
-  //    image->info.imagesize may be bigger than expected due to padding
-  fread( &image->info.imagesize, 4, 1, file);   
+  //    image->info.datasize may be bigger than expected due to padding
+  fread( &image->info.datasize, 4, 1, file);   
   fread( &image->info.xresolution, 4, 1, file);
   fread( &image->info.yresolution, 4, 1, file);
   fread( &image->info.ncolors, 4, 1, file);
@@ -182,7 +181,7 @@ int is_valid_bmp_header(BmpImage *image)
       // Invalid compression
       return 0;
   }
-  if (image->info.imagesize <= 0) {
+  if (image->info.datasize <= 0) {
       // Invalid image size
       return 0;
   }
