@@ -26,6 +26,29 @@ void bmp_create_header(BmpImage *image, int width, int height, int bits)
   image->header.filesize = image->header.offset + image->info.datasize;
 }
 
+
+void clear_header_info(BmpImage *image)
+{
+  image->header.signature[0] = 0;
+  image->header.signature[1] = 0;
+  image->header.filesize = 0;
+  image->header.reserved1 = 0;
+  image->header.reserved2 = 0;
+  image->header.offset = 0;
+
+  image->info.size = 0;
+  image->info.width = 0;
+  image->info.height = 0;
+  image->info.planes = 0;
+  image->info.bits = 0;
+  image->info.compression = 0;
+  image->info.datasize = 0;
+  image->info.xresolution = 0;
+  image->info.yresolution = 0;
+  image->info.ncolors = 0;
+  image->info.importantcolors = 0;
+}
+
 void write_header(BmpImage *image, FILE *file)
 {
   // Write the header (manually)
@@ -240,6 +263,9 @@ void bmp_destroy(BmpImage *image)
 {
   free(image->data);
   image->data = NULL;
+  image->data_raw = NULL;
+
+  clear_header_info(image);
 }
 
 

@@ -29,9 +29,10 @@ int main(int argc, char * argv[])
   printf("Testing regular read and write functions\n");
   BmpImage image;
   if (!bmp_read_from_file(&image, inFileName) ) {
-    printf("Error reading BMP file\n");
+    printf("ERROR: could not read BMP file\n");
     return 1;
   }
+  printf("SUCCESS: read BMP file\n");
 
   // print out a few of the bytes from data_raw
   printf("data_raw[0] = %d\n", image.data_raw[0]);
@@ -42,13 +43,11 @@ int main(int argc, char * argv[])
 
   // Write the BMP file
   if (!bmp_write_to_file(&image, outFileName) ) {
-    printf("Error writing BMP file\n");
+    printf("ERROR: could not write BMP file\n");
     return 1;
   }
+  printf("SUCCESS: wrote BMP file\n");
   
-
-
-
 
   
   return 0;
