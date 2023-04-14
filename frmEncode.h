@@ -19,12 +19,21 @@ class TFormEncode : public TForm
 __published:
     TButton *btnOK;
     TButton *btnCancel;
-    TRichEdit *txtMessage;
+    TRichEdit *tbxMessage;
     TLabel *Label1;
-    TButton *btnOpen;
+    TLabel *Label2;
+    TLabel *lblBytesLeft;
+    void __fastcall btnOKClick(TObject *Sender);
+    void __fastcall tbxMessageChange(TObject *Sender);
 private:
+
+    size_t m_maxMessageSize;
+    size_t m_messageSize;
+
 public:
 	virtual __fastcall TFormEncode(TComponent* AOwner);
+    void __fastcall SetMaxMessageSize(size_t size);
+
 };
 //----------------------------------------------------------------------------
 extern PACKAGE TFormEncode *FormEncode;

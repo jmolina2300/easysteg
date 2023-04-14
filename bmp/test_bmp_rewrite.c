@@ -3,7 +3,7 @@
  * 
  */
 #include <stdio.h>
-#include "tinybmp.h"
+#include "bmpread.h"
 
 
 

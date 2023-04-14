@@ -7,6 +7,7 @@ object FormEncode: TFormEncode
   ClientWidth = 408
   Color = clBtnFace
   ParentFont = True
+  KeyPreview = True
   OldCreateOrder = True
   Position = poScreenCenter
   PixelsPerInch = 96
@@ -18,6 +19,20 @@ object FormEncode: TFormEncode
     Height = 13
     Caption = 'Secret Message'
   end
+  object Label2: TLabel
+    Left = 312
+    Top = 48
+    Width = 74
+    Height = 13
+    Caption = 'Bytes remaining'
+  end
+  object lblBytesLeft: TLabel
+    Left = 352
+    Top = 72
+    Width = 6
+    Height = 13
+    Caption = '0'
+  end
   object btnOK: TButton
     Left = 316
     Top = 208
@@ -25,8 +40,8 @@ object FormEncode: TFormEncode
     Height = 25
     Caption = 'OK'
     Default = True
-    ModalResult = 1
     TabOrder = 0
+    OnClick = btnOKClick
   end
   object btnCancel: TButton
     Left = 316
@@ -38,19 +53,12 @@ object FormEncode: TFormEncode
     ModalResult = 2
     TabOrder = 1
   end
-  object txtMessage: TRichEdit
+  object tbxMessage: TRichEdit
     Left = 24
     Top = 40
     Width = 273
     Height = 225
     TabOrder = 2
-  end
-  object btnOpen: TButton
-    Left = 312
-    Top = 40
-    Width = 75
-    Height = 25
-    Caption = 'Open'
-    TabOrder = 3
+    OnChange = tbxMessageChange
   end
 end

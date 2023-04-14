@@ -1,4 +1,4 @@
-#include "tinybmp.h"
+#include "bmpread.h"
 
 
 

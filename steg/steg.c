@@ -67,7 +67,7 @@ int steg_encode_file_raw(const char *in_file, const char *out_file, char *messag
  * @param key - the key to use for encoding
  * @return int 
  */
-int steg_decode_file_raw(const char *in_file, const char *key, char *message, int max_message_size)
+int steg_decode_file_raw(const char *in_file, const char *key, char *message, size_t max_message_size)
 {
     int success = steg_decode_bmp(in_file, key, message, max_message_size);
     return success;
@@ -82,12 +82,12 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *message, ch
     bmp_read_from_file(&bmp, in_file);
 
     // Get the length of the message
-    int message_length = strlen(message);
-    int key_length = strlen(key);
+    size_t message_length = strlen(message);
+    size_t key_length = strlen(key);
 
     // Get the length of the message and key in bits
-    int message_length_bits = message_length * 8;
-    int key_length_bits = key_length * 8;
+    size_t message_length_bits = message_length * 8;
+    size_t key_length_bits = key_length * 8;
 
     if (message_length_bits + key_length_bits > bmp.info.datasize)
     {
@@ -117,7 +117,7 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *message, ch
 }
 
 // Decode a message from the bmp file and store it in the message buffer
-int steg_decode_bmp(const char *in_file,  const char *key, char *message, int max_message_size)
+int steg_decode_bmp(const char *in_file,  const char *key, char *message, size_t max_message_size)
 {
 
     // Read in the BMP file

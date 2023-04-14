@@ -57,3 +57,6 @@ __history/
 
 # Castalia statistics file
 *.stat
+
+# MacOS crap
+.DS_Store

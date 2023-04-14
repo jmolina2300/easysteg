@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-	#include "bmp/tinybmp.c"
+	#include "bmp/bmpread.c"
 
 #ifdef __cplusplus
 }

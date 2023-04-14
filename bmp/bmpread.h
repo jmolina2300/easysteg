@@ -1,5 +1,5 @@
-#ifndef TINYBMP_H
-#define TINYBMP_H
+#ifndef BMPREAD_H
+#define BMPREAD_H
 
 #include <stdio.h>
 #include <stdint.h>

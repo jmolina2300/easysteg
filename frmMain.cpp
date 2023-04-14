@@ -7,6 +7,7 @@
 #include "frmEncode.h"
 #include "wavread.h"
 #include "bmpread.h"
+#include "steg.h"
 
 
 #define PLOT_SCALE 2000
@@ -92,86 +93,64 @@ void __fastcall TFormMain::DisplaySoundFile()
     tbxFileInfo->Clear();
 
     // Get information about the WAV file
-    WaveInfo wi;
-    FILE *infile = fopen(tbxFileName->Text.c_str(), "rb");
-    if (infile == NULL) {
-        Application->MessageBox("Unable to open file",
-                                "Error", MB_OK | MB_ICONASTERISK);
-        return;
-    }
-    bool acceptableFile = read_pcm_wav_info(infile, tbxFileName->Text.c_str(), &wi);
+    WaveFile wi;
+    bool acceptableFile = wav_read_from_file(&wi, tbxFileName->Text.c_str() );
     if (acceptableFile) {
+        this->availableStegSpace = wi.info.dataChunkSize;
 		AnsiString fileInfo;
-		fileInfo.printf("        Name: %s\n"
-						"        Bits: %d\n"
+		fileInfo.printf(" Name: %s\n"
 						" Sample Rate: %d\n"
-						"    Channels: %d\n"
-						"    Duration: %.2lf\n"
-						"     Samples: %d\n",
+						" Channels: %d\n"
+						" Duration: %.2lf seconds\n"
+						" Samples: %d\n"
+                        "\n"
+                        " Available Space: %d bytes\n",
 						ExtractFileName(OpenDialog1->FileName),
-						wi.BitsPerSample,
-						wi.SampleRate,
-						wi.NumChannels,
-						wi.Duration,
-						wi.NumSamples);
+						wi.info.sampleRate,
+						wi.info.numChannels,
+						wi.info.duration,
+						wi.info.numSamples,
+                        this->availableStegSpace);
         tbxFileInfo->Text = fileInfo;
     } else {
         Application->MessageBox("Unsupported WAV format!",
                                 "Error", MB_OK | MB_ICONASTERISK);
-        fclose(infile);
         return;
     }
-	
-	/* At this point, the file pointer has been moved up to the data portion.
-	 * So we can proceed to read the samples.
-     */
-
-    DBChart1->Series[0]->Clear();
 
 
-    // Create buffer for the audio data
-    size_t audio_window_ms = AUDIO_WINDOW_MS;
-    size_t buffer_samples = wi.SampleRate * (audio_window_ms / 1000.0);
-    int16_t *inbuffer = (int16_t*)malloc(buffer_samples * wi.BlockAlign);
+    int16_t *wavSamples = (int16_t*)wi.data;
 
-    size_t  numSamplesTotal = 0;
-    size_t  numSamplesRead = 0;
     TChartSeries* tmpSeries = (TChartSeries*)DBChart1->Series[0];
 
     // Represent a waveform of arbitrary length using a 2000-element array
     int16_t  valuesToPlot[PLOT_SCALE];
     size_t  valuesToPlotIndex = 0;
-    size_t  delta = wi.NumSamples / PLOT_SCALE;
+    size_t  sampleIndex = 0;
+    size_t  delta = wi.info.numSamples / PLOT_SCALE;
     size_t  deltaCounter = 0;
-    do {
-        
-        numSamplesRead = fread(inbuffer, wi.BlockAlign, buffer_samples, infile);
 
-        /* Add the values to the array using the delta value to tell when
-         *   to actually add each one.
-         */
-        for (size_t i = 0; i < numSamplesRead; i++) {
-            int16_t sample_amplitude = inbuffer[i];
-            if (deltaCounter == delta) {
-                valuesToPlot[valuesToPlotIndex] = sample_amplitude;
-                valuesToPlotIndex++;
-                deltaCounter = 0;
-            }
-            deltaCounter++;
+    // Run through the wav data and pick every few samples to plot
+    while (valuesToPlotIndex < PLOT_SCALE  && sampleIndex < wi.info.numSamples) {
+        if (deltaCounter == 0) {
+            valuesToPlot[valuesToPlotIndex] = wavSamples[sampleIndex];
+            valuesToPlotIndex++;
         }
-        numSamplesTotal += numSamplesRead;
-    } while (numSamplesRead != 0) ;
-
+        deltaCounter++;
+        if (deltaCounter == delta) {
+            deltaCounter = 0;
+        }
+        sampleIndex++;
+    }
 
     // Finally, add the values to the chart 
-    for (size_t i = 0; i < PLOT_SCALE; i++)
+    for (size_t i = 0; i < PLOT_SCALE; i++) {
         tmpSeries->AddXY(i, valuesToPlot[i]);
-
+    }
     DBChart1->RefreshData();
-    
-    
-    free (inbuffer);
-    fclose (infile);
+
+    // Free the memory!
+    wav_destroy(&wi);
 }
 
 void __fastcall TFormMain::DisplayImageFile()
@@ -193,20 +172,27 @@ void __fastcall TFormMain::DisplayImageFile()
 
     bmp_read_from_file(&bi, tbxFileName->Text.c_str());
 
+    this->availableStegSpace = bi.info.datasize / 8;
+
     // Display information about the BMP file in the text box
     AnsiString fileInfo;
 	fileInfo.printf(" Name: %s\n"
 					" Bits: %d\n"
 					" FileSize: %d\n"
 					" DataSize: %d\n"
-					" Pixels: %d\n",
+					" Pixels: %d\n"
+                    " \n"
+                    " Available Space: %d bytes\n",
 
 					ExtractFileName(OpenDialog1->FileName),
-					33,
-					33,
-					33,
-					33);
+					bi.info.bits,
+					bi.header.filesize,
+					bi.info.datasize,
+					bi.info.width * bi.info.height * 3,
+                    this->availableStegSpace);
     tbxFileInfo->Text = fileInfo;
+
+    bmp_destroy(&bi);
 }
 
 void __fastcall TFormMain::Button1Click(TObject *Sender)
@@ -222,19 +208,20 @@ void __fastcall TFormMain::Button1Click(TObject *Sender)
                                 "Error", MB_OK | MB_ICONASTERISK);
         return;
     }
-
-    // Put the FileName in the text box
-    tbxFileName->Text = OpenDialog1->FileName;
-
-    FileType ft = GetFileType(tbxFileName->Text);
-    if (ft == T_SOUND) {
+    AnsiString chosenFileName = OpenDialog1->FileName;
+    FileType fileType = GetFileType(chosenFileName);
+    this->availableStegSpace = 0; // Reset available space (we dont know it yet)
+    if (fileType == T_SOUND) {
         DisplaySoundFile();
-    } else if (ft == T_IMAGE) {
+    } else if (fileType == T_IMAGE) {
         DisplayImageFile();
     } else {
         Application->MessageBox("Please select a BMP or WAV file",
                                 "Error", MB_OK | MB_ICONASTERISK);
     }
+
+    // Put the FileName in the text box  if all went well
+    tbxFileName->Text = chosenFileName;
 
 }
 //---------------------------------------------------------------------------
@@ -255,15 +242,34 @@ void __fastcall TFormMain::FormCreate(TObject *Sender)
 void __fastcall TFormMain::Embed1Click(TObject *Sender)
 {
     // Get the secret message to encode from the user
+    FormEncode->SetMaxMessageSize(availableStegSpace);
     FormEncode->ShowModal();
     if (FormEncode->ModalResult != mrOk) {
         return;
     }
-    if (FormEncode->txtMessage->Text.Length() <= 0) {
+    if (FormEncode->tbxMessage->Text.Length() <= 0) {
         return;
     }
 
     // Do something with secret message
+    AnsiString inputFile;
+    AnsiString outputFile;
+
+    inputFile.printf("%s", tbxFileName->Text.c_str() );
+    outputFile.printf("%s-secret.bmp", tbxFileName->Text );
+    int success = steg_encode_bmp(
+        inputFile.c_str(),                   // input file
+        outputFile.c_str(),                  // output file
+        FormEncode->tbxMessage->Text.c_str(), // the message
+        "asd"
+        );
+    if (success) {
+        Application->MessageBox("Success!",
+                                "Success", MB_OK );
+    } else {
+        Application->MessageBox("Failed to encode message",
+                                "Error", MB_OK | MB_ICONASTERISK);
+    }
 
     
 }

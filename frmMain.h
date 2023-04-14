@@ -53,6 +53,7 @@ __published:	// IDE-managed Components
     void __fastcall CheckBox1Click(TObject *Sender);
 private:	// User declarations
     FileType fileType;
+    size_t availableStegSpace;
     FileType __fastcall GetFileType(const AnsiString &s);
     void __fastcall DisplaySoundFile();
     void __fastcall DisplayImageFile();

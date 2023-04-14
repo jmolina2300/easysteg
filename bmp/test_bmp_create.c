@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "tinybmp.h"
+#include "bmpread.h"
 
 int main(int argc, char * argv[]) 
 {
