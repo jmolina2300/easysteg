@@ -39,14 +39,14 @@ object FormMain: TFormMain
       Height = 13
       Caption = 'Details'
     end
-    object Button1: TButton
+    object btnOpen: TButton
       Left = 272
       Top = 16
       Width = 75
       Height = 25
       Caption = 'Open'
       TabOrder = 0
-      OnClick = Button1Click
+      OnClick = btnOpenClick
     end
     object tbxFileInfo: TRichEdit
       Left = 64
@@ -183,12 +183,13 @@ object FormMain: TFormMain
     end
     object Actions1: TMenuItem
       Caption = 'Actions'
-      object Embed1: TMenuItem
+      object btnEncode: TMenuItem
         Caption = 'Encode'
-        OnClick = Embed1Click
+        OnClick = btnEncodeClick
       end
-      object Extract1: TMenuItem
+      object btnDecode: TMenuItem
         Caption = 'Decode'
+        OnClick = btnDecodeClick
       end
     end
   end

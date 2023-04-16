@@ -72,6 +72,12 @@ bool isSoundFile(const AnsiString &s)
   return (index > 0);
 }
 
+AnsiString RemoveExtension(AnsiString filename) {
+    int lastDotIndex = filename.LastDelimiter(".");
+    return filename.SubString(1, lastDotIndex - 1);
+}
+
+
 FileType __fastcall TFormMain::GetFileType(const AnsiString &fileName)
 {
     if (isSoundFile(fileName)) {
@@ -84,19 +90,20 @@ FileType __fastcall TFormMain::GetFileType(const AnsiString &fileName)
 }
 
 
-void __fastcall TFormMain::DisplaySoundFile()
+void __fastcall TFormMain::DisplaySoundFile(const AnsiString &fileName)
 {
     ScrollBox1->Hide();
     DBChart1->Show();
+
     // Clear the chart and info box
     DBChart1->Series[0]->Clear();
     tbxFileInfo->Clear();
 
     // Get information about the WAV file
     WaveFile wi;
-    bool acceptableFile = wav_read_from_file(&wi, tbxFileName->Text.c_str() );
+    bool acceptableFile = wav_read_from_file(&wi, fileName.c_str() );
     if (acceptableFile) {
-        this->availableStegSpace = wi.info.dataChunkSize;
+        this->availableStegSpace = wi.info.numSamples;
 		AnsiString fileInfo;
 		fileInfo.printf(" Name: %s\n"
 						" Sample Rate: %d\n"
@@ -153,25 +160,23 @@ void __fastcall TFormMain::DisplaySoundFile()
     wav_destroy(&wi);
 }
 
-void __fastcall TFormMain::DisplayImageFile()
+void __fastcall TFormMain::DisplayImageFile(const AnsiString &fileName)
 {
     ScrollBox1->Show();
     DBChart1->Hide();
-    if (!isBMPFile(OpenDialog1->FileName)) {
+    if (!isBMPFile(fileName)) {
         Application->MessageBox("Please select a BMP file",
                                 "Error", MB_OK | MB_ICONASTERISK);
         return;
     }
     try {
-        StegImage->Picture->LoadFromFile(OpenDialog1->FileName);
-        tbxFileName->Text = OpenDialog1->FileName;
+        StegImage->Picture->LoadFromFile(fileName);
+        tbxFileName->Text = fileName;
     }
     catch (Exception &e) { }
 
     BmpImage bi;
-
-    bmp_read_from_file(&bi, tbxFileName->Text.c_str());
-
+    bmp_read_from_file(&bi, fileName.c_str());
     this->availableStegSpace = bi.info.datasize / 8;
 
     // Display information about the BMP file in the text box
@@ -184,7 +189,7 @@ void __fastcall TFormMain::DisplayImageFile()
                     " \n"
                     " Available Space: %d bytes\n",
 
-					ExtractFileName(OpenDialog1->FileName),
+					ExtractFileName(fileName),
 					bi.info.bits,
 					bi.header.filesize,
 					bi.info.datasize,
@@ -195,7 +200,7 @@ void __fastcall TFormMain::DisplayImageFile()
     bmp_destroy(&bi);
 }
 
-void __fastcall TFormMain::Button1Click(TObject *Sender)
+void __fastcall TFormMain::btnOpenClick(TObject *Sender)
 {
     // Open dialog to get the desired file
     bool success = OpenDialog1->Execute();
@@ -212,12 +217,13 @@ void __fastcall TFormMain::Button1Click(TObject *Sender)
     FileType fileType = GetFileType(chosenFileName);
     this->availableStegSpace = 0; // Reset available space (we dont know it yet)
     if (fileType == T_SOUND) {
-        DisplaySoundFile();
+        DisplaySoundFile(chosenFileName);
     } else if (fileType == T_IMAGE) {
-        DisplayImageFile();
+        DisplayImageFile(chosenFileName);
     } else {
         Application->MessageBox("Please select a BMP or WAV file",
                                 "Error", MB_OK | MB_ICONASTERISK);
+        return;
     }
 
     // Put the FileName in the text box  if all went well
@@ -234,12 +240,54 @@ void __fastcall TFormMain::FormCreate(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
+{
+    AnsiString inputFile;
+    AnsiString outputFile;
+    inputFile.printf("%s", tbxFileName->Text.c_str() );
+    outputFile = RemoveExtension(inputFile) + "-steg.bmp";
 
+    int success = steg_encode_bmp(
+        inputFile.c_str(),                    // input file
+        outputFile.c_str(),                   // output file
+        "asd",                                // key
+        FormEncode->tbxMessage->Text.c_str(), // the message
+        FormEncode->tbxMessage->Text.Length() // the length
+        );
+    if (success) {
+        Application->MessageBox("Success!",
+                                "Success", MB_OK );
+    } else {
+        Application->MessageBox("Failed to encode message",
+                                "Error", MB_OK | MB_ICONASTERISK);
+    }
 
+}
 
+void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
+{
+    AnsiString inputFile;
+    AnsiString outputFile;
+    inputFile.printf("%s", tbxFileName->Text.c_str() );
+    outputFile = RemoveExtension(inputFile) + "-steg.wav";
 
+    int success = steg_encode_wav(
+        inputFile.c_str(),                    // input file
+        outputFile.c_str(),                   // output file
+        "asd",                                // key
+        FormEncode->tbxMessage->Text.c_str(), // the message
+        FormEncode->tbxMessage->Text.Length() // the length
+        );
+    if (success) {
+        Application->MessageBox("Success!",
+                                "Success", MB_OK );
+    } else {
+        Application->MessageBox("Failed to encode message",
+                                "Error", MB_OK | MB_ICONASTERISK);
+    }
+}
 
-void __fastcall TFormMain::Embed1Click(TObject *Sender)
+void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
 {
     // Get the secret message to encode from the user
     FormEncode->SetMaxMessageSize(availableStegSpace);
@@ -251,26 +299,16 @@ void __fastcall TFormMain::Embed1Click(TObject *Sender)
         return;
     }
 
-    // Do something with secret message
-    AnsiString inputFile;
-    AnsiString outputFile;
+    AnsiString chosenFileName = tbxFileName->Text;
+    FileType fileType = GetFileType(chosenFileName);
 
-    inputFile.printf("%s", tbxFileName->Text.c_str() );
-    outputFile.printf("%s-secret.bmp", tbxFileName->Text );
-    int success = steg_encode_bmp(
-        inputFile.c_str(),                   // input file
-        outputFile.c_str(),                  // output file
-        FormEncode->tbxMessage->Text.c_str(), // the message
-        "asd"
-        );
-    if (success) {
-        Application->MessageBox("Success!",
-                                "Success", MB_OK );
+    if (fileType == T_SOUND) {
+        EncodeSoundFile("asd");
+    } else if (fileType == T_IMAGE) {
+        EncodeImageFile("asd");
     } else {
-        Application->MessageBox("Failed to encode message",
-                                "Error", MB_OK | MB_ICONASTERISK);
+        ShowMessage("What kind of abomination is this?");
     }
-
     
 }
 //---------------------------------------------------------------------------
@@ -286,6 +324,48 @@ void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
         StegImage->Align = alNone;
     }
     StegImage->Repaint();    
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
+{
+    AnsiString chosenFileName = tbxFileName->Text;
+    FileType fileType = GetFileType(chosenFileName);
+
+    char *decodeBuffer = (char*)calloc(availableStegSpace + 1, sizeof(byte));
+    if (decodeBuffer == NULL) {
+        Application->MessageBox("Failed to decode message.\n\n"
+                                "Could not allocate memory for message buffer",
+                                "Error", MB_OK | MB_ICONASTERISK);
+        return;
+    }
+    AnsiString msg;
+    msg.printf("Decode %d bytes from %s\n",
+        availableStegSpace,
+        chosenFileName.c_str() );
+    ShowMessage(msg);
+
+    
+    int decodeSuccess;
+    if (fileType == T_SOUND) {
+        // FIXME: MESSAGE_SIZE/8 BECAUSE WE'RE DOING MATH IN TWO PLACES
+        decodeSuccess = steg_decode_wav(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace / 8);
+    } else if (fileType == T_IMAGE) {
+        decodeSuccess = steg_decode_bmp(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace);
+    }
+
+    if (decodeSuccess) {
+        ShowMessage(decodeBuffer);
+    } else {
+        Application->MessageBox("Failed to decode message.\n\n",
+                                "Error", MB_OK | MB_ICONASTERISK);
+    }
+
+    free(decodeBuffer);
+
+
 }
 //---------------------------------------------------------------------------
 

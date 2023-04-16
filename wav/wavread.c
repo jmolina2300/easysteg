@@ -255,6 +255,7 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
         strncmp(riffChunkHeader.ckID, "RIFF", 4) ||
         strncmp(riffChunkHeader.formType, "WAVE", 4)) {
             fprintf (stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+            fclose(infile);
             return 0;
     }
     /*
@@ -264,6 +265,7 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
     while(!data_chunk_found) {
         if (!fread(&chunkHeader, sizeof(ChunkHeader), 1, infile)) {
             fprintf(stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+            fclose(infile);
             return 0;
         }
 
@@ -277,6 +279,7 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
             if (chunkHeader.ckSize < 16 || chunkHeader.ckSize > sizeof (WaveHeader) ||
                 !fread (&waveHeader, chunkHeader.ckSize, 1, infile)) {
                     fprintf (stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+                    fclose(infile);
                     return 0;
             }
 
@@ -288,27 +291,32 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
 
             if (bits_per_sample != 16) {
                 fprintf (stderr, "\"%s\" is not a 16-bit .WAV file!\n", infilename);
+                fclose(infile);
                 return 0;
             }
 
             if (waveHeader.NumChannels < 1 || waveHeader.NumChannels > 2) {
                 fprintf (stderr, "\"%s\" is not a mono or stereo .WAV file!\n", infilename);
+                fclose(infile);
                 return 0;
             }
 
             if (waveHeader.BlockAlign != waveHeader.NumChannels * 2) {
                 fprintf (stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+                fclose(infile);
                 return 0;
             }
 
             if (format == WAVE_FORMAT_PCM) {
                 if (waveHeader.SampleRate < 8000 || waveHeader.SampleRate > 48000) {
                     fprintf (stderr, "\"%s\" sample rate is %lu, must be 8000 to 48000!\n", infilename, (unsigned long) waveHeader.SampleRate);
+                    fclose(infile);
                     return 0;
                 }
             }
             else {
                 fprintf (stderr, "\"%s\" is not a PCM .WAV file!\n", infilename);
+                fclose(infile);
                 return 0;
             }
         } 
@@ -320,16 +328,19 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
              */ 
             if (!waveHeader.SampleRate) {
                 fprintf (stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+                fclose(infile);
                 return 0;
             }
 
             if (!chunkHeader.ckSize) {
                 fprintf (stderr, "this .WAV file has no audio samples, probably is corrupt!\n");
+                fclose(infile);
                 return 0;
             }
 
             if (chunkHeader.ckSize % waveHeader.BlockAlign) {
                 fprintf (stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+                fclose(infile);
                 return 0;
             }
 
@@ -337,6 +348,7 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
 
             if (!numSamples) {
                 fprintf (stderr, "this .WAV file has no audio samples, probably is corrupt!\n");
+                fclose(infile);
                 return 0;
             }
 
@@ -353,6 +365,7 @@ int wav_read_from_file(WaveFile *wf, const char *infilename)
             while (bytes_to_eat--)
                 if (!fread (&dummy, 1, 1, infile)) {
                     fprintf (stderr, "\"%s\" is not a valid .WAV file!\n", infilename);
+                    fclose(infile);
                     return 0;
                 }
         }
@@ -406,7 +419,7 @@ int wav_write_to_file(WaveFile *wf, const char *outfilename)
 
 
     // Write samples to the file
-    int numSamplesWritten = 0;
+    size_t numSamplesWritten = 0;
     while (numSamplesWritten < wf->info.numSamples) {
         numSamplesWritten += fwrite(wf->data, wf->info.blockAlign, wf->info.numSamples - numSamplesWritten, outfile);
     }

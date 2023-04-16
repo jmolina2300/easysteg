@@ -27,7 +27,7 @@ typedef enum {
 class TFormMain : public TForm
 {
 __published:	// IDE-managed Components
-    TButton *Button1;
+    TButton *btnOpen;
     TDBChart *DBChart1;
     TLineSeries *Series1;
     TPanel *Panel1;
@@ -42,21 +42,25 @@ __published:	// IDE-managed Components
     TMainMenu *MainMenu1;
     TMenuItem *File1;
     TMenuItem *Actions1;
-    TMenuItem *Embed1;
-    TMenuItem *Extract1;
+    TMenuItem *btnEncode;
+    TMenuItem *btnDecode;
     TPanel *Panel3;
     TCheckBox *CheckBox1;
     TLabel *Label3;
-    void __fastcall Button1Click(TObject *Sender);
+    void __fastcall btnOpenClick(TObject *Sender);
     void __fastcall FormCreate(TObject *Sender);
-    void __fastcall Embed1Click(TObject *Sender);
+    void __fastcall btnEncodeClick(TObject *Sender);
     void __fastcall CheckBox1Click(TObject *Sender);
+    void __fastcall btnDecodeClick(TObject *Sender);
 private:	// User declarations
     FileType fileType;
     size_t availableStegSpace;
     FileType __fastcall GetFileType(const AnsiString &s);
-    void __fastcall DisplaySoundFile();
-    void __fastcall DisplayImageFile();
+    void __fastcall DisplaySoundFile(const AnsiString &s);
+    void __fastcall DisplayImageFile(const AnsiString &s);
+
+    void __fastcall EncodeSoundFile(const AnsiString &s);
+    void __fastcall EncodeImageFile(const AnsiString &s);
 public:		// User declarations
     __fastcall TFormMain(TComponent* Owner);
 };
