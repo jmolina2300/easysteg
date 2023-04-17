@@ -103,7 +103,8 @@ void __fastcall TFormMain::DisplaySoundFile(const AnsiString &fileName)
     WaveFile wi;
     bool acceptableFile = wav_read_from_file(&wi, fileName.c_str() );
     if (acceptableFile) {
-        this->availableStegSpace = wi.info.numSamples;
+        this->availableStegSpace = wi.info.numSamples / 8;
+        this->availableStegSpace -= this->availableStegSpace % KEY_LENGTH;
 		AnsiString fileInfo;
 		fileInfo.printf(" Name: %s\n"
 						" Sample Rate: %d\n"
@@ -178,6 +179,7 @@ void __fastcall TFormMain::DisplayImageFile(const AnsiString &fileName)
     BmpImage bi;
     bmp_read_from_file(&bi, fileName.c_str());
     this->availableStegSpace = bi.info.datasize / 8;
+    this->availableStegSpace -= this->availableStegSpace % KEY_LENGTH;
 
     // Display information about the BMP file in the text box
     AnsiString fileInfo;
@@ -247,6 +249,18 @@ void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
     inputFile.printf("%s", tbxFileName->Text.c_str() );
     outputFile = RemoveExtension(inputFile) + "-steg.bmp";
 
+    // Add padding to the message
+    size_t messagePadding = KEY_LENGTH - (FormEncode->tbxMessage->Text.Length() % KEY_LENGTH);
+    if (messagePadding != KEY_LENGTH) {
+        FormEncode->tbxMessage->Text.SetLength(FormEncode->tbxMessage->Text.Length() + messagePadding);
+        for (size_t i = 0; i < messagePadding; i++) {
+            FormEncode->tbxMessage->Text =  FormEncode->tbxMessage->Text + " ";
+        }
+    }
+    AnsiString msg;
+    msg.printf("Bytes required for padding: %d", messagePadding,FormEncode->tbxMessage->Text[FormEncode->tbxMessage->Text.Length() -1] );
+    ShowMessage(msg);
+
     int success = steg_encode_bmp(
         inputFile.c_str(),                    // input file
         outputFile.c_str(),                   // output file
@@ -282,8 +296,12 @@ void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
         Application->MessageBox("Success!",
                                 "Success", MB_OK );
     } else {
-        Application->MessageBox("Failed to encode message",
-                                "Error", MB_OK | MB_ICONASTERISK);
+        AnsiString msg;
+        msg.printf("length of message: %d\n", FormEncode->tbxMessage->Text.Length());
+
+        ShowMessage("Failed to encode: " + msg);
+        //Application->MessageBox("Failed to encode message" + msg,
+                                //"Error", MB_OK | MB_ICONASTERISK);
     }
 }
 
@@ -303,9 +321,9 @@ void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
     FileType fileType = GetFileType(chosenFileName);
 
     if (fileType == T_SOUND) {
-        EncodeSoundFile("asd");
+        EncodeSoundFile(FormEncode->tbxMessage->Text);
     } else if (fileType == T_IMAGE) {
-        EncodeImageFile("asd");
+        EncodeImageFile(FormEncode->tbxMessage->Text);
     } else {
         ShowMessage("What kind of abomination is this?");
     }
@@ -347,12 +365,14 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
         chosenFileName.c_str() );
     ShowMessage(msg);
 
-    
+
     int decodeSuccess;
-    if (fileType == T_SOUND) {
-        // FIXME: MESSAGE_SIZE/8 BECAUSE WE'RE DOING MATH IN TWO PLACES
-        decodeSuccess = steg_decode_wav(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace / 8);
-    } else if (fileType == T_IMAGE) {
+    if (fileType == T_SOUND)
+    {
+        decodeSuccess = steg_decode_wav(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace);
+    }
+    else if (fileType == T_IMAGE)
+    {
         decodeSuccess = steg_decode_bmp(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace);
     }
 

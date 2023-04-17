@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     
 
     // Encode the message into the file
-    if (steg_encode_file_raw(in_file, out_file, message, key))
+    if (steg_encode_bmp(in_file, out_file, key, message, strlen(message)))
     {
         printf("SUCCESS: encoded message into file %s\n", out_file);
     }
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
 
     // Decode the message from the file
-    if (steg_decode_file_raw(out_file, key, message, 1000))
+    if (steg_decode_bmp(out_file, key, message, 1000))
     {
         printf("SUCCESS: decoded message from file %s\n", out_file);
     }

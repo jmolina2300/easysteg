@@ -1,6 +1,6 @@
 object FormEncode: TFormEncode
-  Left = 459
-  Top = 153
+  Left = 158
+  Top = 180
   BorderStyle = bsDialog
   Caption = 'Encode'
   ClientHeight = 290

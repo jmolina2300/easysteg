@@ -8,6 +8,8 @@
 #include "../wav/wavread.h"  // WAV reading
 
 
+#define KEY_LENGTH 8
+
 
 
 // Encode a message into a file (will select the correct function based on file type)
