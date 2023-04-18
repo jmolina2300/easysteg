@@ -1,6 +1,6 @@
 object FormMain: TFormMain
-  Left = 203
-  Top = 124
+  Left = 726
+  Top = 148
   Width = 849
   Height = 535
   Caption = 'Easysteg v0.0.0'
@@ -14,13 +14,13 @@ object FormMain: TFormMain
   Font.Style = []
   Menu = MainMenu1
   OldCreateOrder = False
-  OnCreate = FormCreate
+  Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 833
+    Width = 841
     Height = 201
     Align = alTop
     BevelOuter = bvNone
@@ -73,8 +73,8 @@ object FormMain: TFormMain
   object Panel2: TPanel
     Left = 0
     Top = 201
-    Width = 833
-    Height = 275
+    Width = 841
+    Height = 283
     Align = alClient
     BevelOuter = bvNone
     Caption = 'Panel2'
@@ -82,8 +82,8 @@ object FormMain: TFormMain
     object DBChart1: TDBChart
       Left = 0
       Top = 25
-      Width = 833
-      Height = 250
+      Width = 841
+      Height = 258
       AllowPanning = pmNone
       BackWall.Brush.Color = clWhite
       BackWall.Brush.Style = bsClear
@@ -120,8 +120,8 @@ object FormMain: TFormMain
     object ScrollBox1: TScrollBox
       Left = 0
       Top = 25
-      Width = 833
-      Height = 250
+      Width = 841
+      Height = 258
       HorzScrollBar.Tracking = True
       VertScrollBar.ThumbSize = 12
       VertScrollBar.Tracking = True
@@ -145,7 +145,7 @@ object FormMain: TFormMain
     object Panel3: TPanel
       Left = 0
       Top = 0
-      Width = 833
+      Width = 841
       Height = 25
       Align = alTop
       BevelOuter = bvNone

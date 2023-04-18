@@ -5,6 +5,7 @@
 
 USEFORM("frmMain.cpp", FormMain);
 USEFORM("frmEncode.cpp", FormEncode);
+USEFORM("frmDecode.cpp", FormDecode);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -13,6 +14,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
          Application->Initialize();
          Application->CreateForm(__classid(TFormMain), &FormMain);
          Application->CreateForm(__classid(TFormEncode), &FormEncode);
+         Application->CreateForm(__classid(TFormDecode), &FormDecode);
          Application->Run();
     }
     catch (Exception &exception)
