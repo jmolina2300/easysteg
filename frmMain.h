@@ -48,12 +48,10 @@ __published:	// IDE-managed Components
     TCheckBox *CheckBox1;
     TLabel *Label3;
     void __fastcall btnOpenClick(TObject *Sender);
-    void __fastcall FormCreate(TObject *Sender);
     void __fastcall btnEncodeClick(TObject *Sender);
     void __fastcall CheckBox1Click(TObject *Sender);
     void __fastcall btnDecodeClick(TObject *Sender);
 private:	// User declarations
-    FileType fileType;
     size_t availableStegSpace;
     FileType __fastcall GetFileType(const AnsiString &s);
     void __fastcall DisplaySoundFile(const AnsiString &s);

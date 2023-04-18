@@ -5,6 +5,7 @@
 
 #include "frmMain.h"
 #include "frmEncode.h"
+#include "frmDecode.h"
 #include "wavread.h"
 #include "bmpread.h"
 #include "steg.h"
@@ -235,11 +236,6 @@ void __fastcall TFormMain::btnOpenClick(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TFormMain::FormCreate(TObject *Sender)
-{
-    this->fileType = T_NULL;
-}
-//---------------------------------------------------------------------------
 
 
 void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
@@ -269,10 +265,15 @@ void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
         FormEncode->tbxMessage->Text.Length() // the length
         );
     if (success) {
-        Application->MessageBox("Success!",
-                                "Success", MB_OK );
+        AnsiString successMsg = "Message wrriten to " + ExtractFileName(outputFile);
+        Application->MessageBox(successMsg.c_str(),
+                                "Success", MB_OK | MB_ICONINFORMATION);
     } else {
-        Application->MessageBox("Failed to encode message",
+        AnsiString msg;
+        msg.printf("Failed to encode Message.\n\n"
+                   "length of message: %d\n",
+                   FormEncode->tbxMessage->Text.Length());
+        Application->MessageBox(msg.c_str(),
                                 "Error", MB_OK | MB_ICONASTERISK);
     }
 
@@ -293,15 +294,16 @@ void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
         FormEncode->tbxMessage->Text.Length() // the length
         );
     if (success) {
-        Application->MessageBox("Success!",
-                                "Success", MB_OK );
+        AnsiString successMsg = "Message wrriten to " + ExtractFileName(outputFile);
+        Application->MessageBox(successMsg.c_str(),
+                                "Success", MB_OK | MB_ICONINFORMATION);
     } else {
         AnsiString msg;
-        msg.printf("length of message: %d\n", FormEncode->tbxMessage->Text.Length());
-
-        ShowMessage("Failed to encode: " + msg);
-        //Application->MessageBox("Failed to encode message" + msg,
-                                //"Error", MB_OK | MB_ICONASTERISK);
+        msg.printf("Failed to encode Message.\n\n"
+                   "length of message: %d\n",
+                   FormEncode->tbxMessage->Text.Length());
+        Application->MessageBox(msg.c_str(),
+                                "Error", MB_OK | MB_ICONASTERISK);
     }
 }
 
@@ -351,6 +353,9 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
 {
     AnsiString chosenFileName = tbxFileName->Text;
     FileType fileType = GetFileType(chosenFileName);
+    if (fileType == T_NULL) {
+        return;
+    }
 
     char *decodeBuffer = (char*)calloc(availableStegSpace + 1, sizeof(byte));
     if (decodeBuffer == NULL) {
@@ -359,11 +364,14 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
                                 "Error", MB_OK | MB_ICONASTERISK);
         return;
     }
+#ifdef DEBUG_STEG
+
     AnsiString msg;
     msg.printf("Decode %d bytes from %s\n",
         availableStegSpace,
         chosenFileName.c_str() );
     ShowMessage(msg);
+#endif DEBUG_STEG
 
 
     int decodeSuccess;
@@ -377,7 +385,11 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
     }
 
     if (decodeSuccess) {
-        ShowMessage(decodeBuffer);
+        AnsiString decodedText;
+        decodedText.printf("%s", decodeBuffer);
+        FormDecode->SetInitialText(decodedText);
+        FormDecode->ShowModal();
+
     } else {
         Application->MessageBox("Failed to decode message.\n\n",
                                 "Error", MB_OK | MB_ICONASTERISK);

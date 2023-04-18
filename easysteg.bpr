@@ -4,14 +4,15 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="easysteg.exe"/>
-    <OBJFILES value="easysteg.obj frmMain.obj wavread.obj frmEncode.obj bmpread.obj steg.obj"/>
+    <OBJFILES value="easysteg.obj frmMain.obj wavread.obj frmEncode.obj bmpread.obj steg.obj 
+      frmDecode.obj"/>
     <RESFILES value="easysteg.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) frmMain.dfm frmEncode.dfm"/>
+    <RESDEPEN value="$(RESFILES) frmMain.dfm frmEncode.dfm frmDecode.dfm"/>
     <LIBFILES value=""/>
-    <LIBRARIES value=""/>
+    <LIBRARIES value="dbrtl.lib tee.lib teedb.lib rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib teedb.lib tee.lib dbrtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi dbrtl.bpi adortl.bpi vcldb.bpi vclx.bpi bdertl.bpi 
       vcldbx.bpi ibxpress.bpi dsnap.bpi cds.bpi bdecds.bpi qrpt.bpi teeui.bpi 
@@ -28,7 +29,7 @@
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
     <USERDEFINES value="_DEBUG"/>
-    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="easysteg.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files (x86)\Borland\CBuilder6\Projects&quot;;C:\Users\jmoli\Documents\BorlandC6\easysteg;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="&quot;C:\Program Files (x86)\Borland\CBuilder6\Projects&quot;;C:\Users\jmoli\Documents\BorlandC6\easysteg;$(BCB)\lib\obj;$(BCB)\lib"/>
@@ -48,9 +49,9 @@
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
-    <ALLOBJ value="c0w32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
@@ -62,6 +63,7 @@
       <FILE FILENAME="frmEncode.cpp" FORMNAME="FormEncode" UNITNAME="frmEncode" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="bmpread.cpp" FORMNAME="" UNITNAME="bmpread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="steg.cpp" FORMNAME="" UNITNAME="steg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="frmDecode.cpp" FORMNAME="FormDecode" UNITNAME="frmDecode" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -93,6 +95,22 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=C:\Program Files (x86)\Borland\CBuilder6\Projects;C:\Users\jmoli\Documents\BorlandC6\easysteg;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=C:\Program Files (x86)\Borland\CBuilder6\Projects;C:\Users\jmoli\Documents\BorlandC6\easysteg;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
