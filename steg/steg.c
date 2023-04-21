@@ -81,39 +81,6 @@ void shift_in_byte_from_array(uint8_t *dest_byte, uint8_t *src, int offset) {
 }
 
 
-/**
- * @brief steg_encode_file_raw
- * 
- * Encodes a message into a file 
- * 
- * @param in_file the file to read from
- * @param out_file the file to write the encoded message to
- * @param message the secret message to encode
- * @param key  the key to use for encoding
- * @return int 
- */
-int steg_encode_file_raw(const char *in_file, const char *out_file, char *message, char *key)
-{
-    return 0;
-}
-
-
-
-/**
- * @brief steg_decode_file_raw
- * 
- * Decodes a message from a file
- * 
- * @param in_file - the file to read from
- * @param out_file - the file to write the decoded message to
- * @param message - the secret message to encode
- * @param key - the key to use for encoding
- * @return int 
- */
-int steg_decode_file_raw(const char *in_file, const char *key, char *message, size_t max_message_size)
-{
-    return 0;
-}
 
 
 // Encode a message into a BMP file
@@ -123,23 +90,17 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     BmpImage bmp;
     bmp_read_from_file(&bmp, in_file);
 
-    // Get the length of the message
-    size_t message_length = strlen(message);
-    size_t key_length = strlen(key);
 
-    // Get the length of the message and key in bits
-    size_t message_length_bits = message_length * 8;
-
-    if (message_length_bits > bmp.info.datasize)
+    // Check if the message is too long to fit in the image
+    if (!message_fits(message_size, bmp.info.datasize, KEY_LENGTH))
     {
-        // The message is too long to fit in the image
         bmp_destroy(&bmp);
         return 0;
     }
 
     // write the data to the file
     size_t i;
-    for (i = 0; i < message_length; i++)
+    for (i = 0; i < message_size; i++)
     {
         // Get the byte from the message and shift it out to the array
         uint8_t byte = message[i];
@@ -193,8 +154,7 @@ int steg_encode_wav(const char *in_file, const char *out_file, char *key, char *
 
 
     // Get the length of the message and key in bits
-    size_t message_length_bits = message_size * 8;
-    if (message_length_bits > wav.info.numSamples)
+    if (!message_fits(message_size, &wav.info.numSamples, KEY_LENGTH))
     {
         // The message is too long to fit in the WAV file
         
@@ -271,4 +231,150 @@ int steg_decode_wav(const char *in_file, const char *key, char *message, size_t 
 
     return 1;
 }
+
+
+
+/**
+ * @brief get_padded_message
+ * 
+ * Pads the message with 0's to make it a multiple of KEY_LENGTH
+ * 
+ * @param msg 
+ * @param msg_len 
+ * @return char* 
+ */
+char *get_padded_message(char *msg, size_t msg_len)
+{
+    char *padded_msg = NULL;
+    size_t msg_padding = KEY_LENGTH - (msg_len % KEY_LENGTH);
+    size_t padded_msg_len = msg_len + msg_padding;
+
+
+    padded_msg = calloc(padded_msg_len, sizeof(char));
+    if (padded_msg == NULL)
+    {
+        return NULL;
+    }
+
+    // Copy the original message into the padded message buffer
+    memcpy(padded_msg, msg, msg_len);
+
+    return padded_msg;
+}
+
+
+
+/**
+ * @brief message_fits
+ * 
+ * Checks to see if the message will fit in the file
+ * 
+ * As specified in Key Protocol V1 drawing
+ * 
+ * @param message_length 
+ * @param proposed_file_size 
+ * @param key_length 
+ * @return int 
+ */
+int message_fits(size_t message_length, size_t file_size, size_t key_length)
+{
+    size_t available_space = file_size / 8;
+    available_space -= available_space % key_length;
+
+    if (message_length > available_space)
+    {
+        return 0;
+    }
+    return 1;
+}
+
+
+/**
+ * @brief steg_encrypt_block
+ * 
+ * Encrypts a block of data byte-per-byte using the key
+ * 
+ * @param message_ptr 
+ * @param key 
+ * @param key_len 
+ */
+void steg_encrypt_block(char *message_ptr, char* key, size_t key_len)
+{
+    size_t i;
+    for (i = 0; i < key_len; i++)
+    {
+        message_ptr[i] = message_ptr[i] ^ key[i];
+    }
+}
+
+
+/**
+ * @brief steg_encrypt_message
+ * 
+ * Encrypts an entire message buffer using the key
+ * 
+ * @param msg 
+ * @param key 
+ * @param msg_len 
+ * @param key_len 
+ */
+void steg_encrypt_message(char *msg, char *key, size_t msg_len, size_t key_len)
+{
+    size_t i;
+    size_t num_blocks = msg_len / key_len + 1;
+    size_t message_padding = key_len - (msg_len % key_len);
+
+    for (i = 0; i < num_blocks; i++)
+    {
+        char *curr_block = &msg[i * key_len];
+        steg_encrypt_block(curr_block, key, key_len);
+    }
+
+}
+
+
+/**
+ * @brief steg_decrypt_block
+ * 
+ * Decrypts a block of data byte-per-byte using the key
+ * 
+ * @param message_ptr 
+ * @param key 
+ * @param key_len 
+ */
+void steg_decrypt_block(char *message_ptr, char* key, size_t key_len)
+{
+    size_t i;
+    for (i = 0; i < key_len; i++)
+    {
+        message_ptr[i] = message_ptr[i] ^ key[i];
+    }
+}
+
+
+/**
+ * @brief steg_decrypt_message
+ * 
+ * Decrypts an entire message buffer using the key
+ * 
+ * @param msg 
+ * @param key 
+ * @param msg_len 
+ * @param key_len 
+ */
+
+void steg_decrypt_message(char *msg, char *key, size_t msg_len, size_t key_len)
+{
+    size_t i;
+    size_t num_blocks = msg_len / key_len + 1;
+    size_t message_padding = key_len - (msg_len % key_len);
+
+    for (i = 0; i < num_blocks; i++)
+    {
+        char *curr_block = &msg[i * key_len];
+        steg_decrypt_block(curr_block, key, key_len);
+    }
+
+}
+
 
