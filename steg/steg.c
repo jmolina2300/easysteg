@@ -1,7 +1,12 @@
 #include "steg.h"
 
 
-
+size_t compute_available_space(size_t file_size)
+{
+    size_t available_space = (file_size / 8);
+    available_space -= available_space % KEY_LENGTH;
+    return available_space;
+}
 
 /**
  * @brief 
@@ -98,12 +103,27 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
         return 0;
     }
 
-    // write the data to the file
+    // Overwrite LSBs with 0
     size_t i;
-    for (i = 0; i < message_size; i++)
+    for (i = 0; i < bmp.info.datasize; i++) {
+        shift_out_byte_to_array(bmp.data_raw, 0, i * 8);
+    }
+
+
+
+    char *encrypted_message = get_encrypted_message(message, key);
+    if (encrypted_message == NULL) 
+    {
+        bmp_destroy(&bmp);
+        return 0;
+    }
+    size_t encrypted_message_len = strlen(encrypted_message);
+
+    // write the data to the file
+    for (i = 0; i < encrypted_message_len; i++)
     {
         // Get the byte from the message and shift it out to the array
-        uint8_t byte = message[i];
+        uint8_t byte = encrypted_message[i];
         int offset = i * 8;
         shift_out_byte_to_array(bmp.data_raw, byte, offset);
     }
@@ -113,13 +133,13 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     {
         // Error occurred, but still need to destroy the bmp
     }
+    free(encrypted_message);
     bmp_destroy(&bmp);
-
     return 1;
 }
 
 // Decode a message from the bmp file and store it in the message buffer
-int steg_decode_bmp(const char *in_file, const char *key, char *message, size_t max_message_size)
+int steg_decode_bmp(const char *in_file, const char *key, char *message, size_t buffer_size)
 {
 
     // Read in the BMP file
@@ -129,20 +149,36 @@ int steg_decode_bmp(const char *in_file, const char *key, char *message, size_t 
         return 0;
     }
 
+    size_t num_bytes_to_read;
+    size_t max_msg_len = compute_available_space(bmp.info.datasize);
+    if (buffer_size > max_msg_len) {
+        num_bytes_to_read = max_msg_len;
+    } else {
+        num_bytes_to_read = buffer_size;
+    }
 
+    
     // Run through the file data and fish out the message
     size_t i;
-    for (i = 0; i < max_message_size; i++)
+    for (i = 0; i < num_bytes_to_read; i++)
     {
         uint8_t byte = 0;
         int offset = i * 8;
         shift_in_byte_from_array(&byte, bmp.data_raw, offset);
         message[i] = byte;
     }
+    
+
+    size_t num_blocks = num_bytes_to_read / KEY_LENGTH;
+    for (i = 0; i < num_blocks; i++) {
+        char *curr_block = message + (i * KEY_LENGTH);
+        steg_decrypt_block(curr_block, key, KEY_LENGTH);
+    }
+
+
 
     // Destroy the bmp
     bmp_destroy(&bmp); 
-
     return 1;
 }
 
@@ -243,8 +279,9 @@ int steg_decode_wav(const char *in_file, const char *key, char *message, size_t 
  * @param msg_len 
  * @return char* 
  */
-char *get_padded_message(char *msg, size_t msg_len)
+char *get_padded_message(char *msg)
 {
+    size_t msg_len = strlen(msg);
     char *padded_msg = NULL;
     size_t msg_padding = KEY_LENGTH - (msg_len % KEY_LENGTH);
     size_t padded_msg_len = msg_len + msg_padding;
@@ -258,7 +295,10 @@ char *get_padded_message(char *msg, size_t msg_len)
 
     // Copy the original message into the padded message buffer
     memcpy(padded_msg, msg, msg_len);
-
+    size_t i;
+    for(i =  msg_len; i < msg_len + msg_padding; i++) {
+        padded_msg[i] = PADDING_CHARACTER;
+    }
     return padded_msg;
 }
 
@@ -308,29 +348,41 @@ void steg_encrypt_block(char *message_ptr, char* key, size_t key_len)
 }
 
 
-/**
- * @brief steg_encrypt_message
- * 
- * Encrypts an entire message buffer using the key
- * 
- * @param msg 
- * @param key 
- * @param msg_len 
- * @param key_len 
- */
-void steg_encrypt_message(char *msg, char *key, size_t msg_len, size_t key_len)
+char *get_encrypted_message(char *original_msg, char *key)
 {
-    size_t i;
-    size_t num_blocks = msg_len / key_len + 1;
-    size_t message_padding = key_len - (msg_len % key_len);
-
-    for (i = 0; i < num_blocks; i++)
-    {
-        char *curr_block = &msg[i * key_len];
-        steg_encrypt_block(curr_block, key, key_len);
+    char *new_message = get_padded_message(original_msg);
+    if (new_message == NULL) {
+        return NULL;
     }
 
+    size_t new_msg_len = strlen(new_message);
+    size_t num_blocks = new_msg_len / KEY_LENGTH;
+    size_t i;
+    for (i = 0 ; i < num_blocks; i++) {
+        char *curr_block = new_message + (i * KEY_LENGTH);
+        steg_encrypt_block(curr_block, key, KEY_LENGTH);
+    }
+
+    return new_message;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -345,36 +397,29 @@ void steg_encrypt_message(char *msg, char *key, size_t msg_len, size_t key_len)
 void steg_decrypt_block(char *message_ptr, char* key, size_t key_len)
 {
     size_t i;
-    for (i = 0; i < key_len; i++)
+    for (i = 0; i < key_len && (message_ptr[i] != '\0'); i++)
     {
         message_ptr[i] = message_ptr[i] ^ key[i];
     }
 }
 
 
-/**
- * @brief steg_decrypt_message
- * 
- * Decrypts an entire message buffer using the key
- * 
- * @param msg 
- * @param key 
- * @param msg_len 
- * @param key_len 
- */
-
-void steg_decrypt_message(char *msg, char *key, size_t msg_len, size_t key_len)
+char *get_decrypted_message(char *original_msg, char *key)
 {
-    size_t i;
-    size_t num_blocks = msg_len / key_len + 1;
-    size_t message_padding = key_len - (msg_len % key_len);
-
-    for (i = 0; i < num_blocks; i++)
-    {
-        char *curr_block = &msg[i * key_len];
-        steg_decrypt_block(curr_block, key, key_len);
+    char *new_message = get_padded_message(original_msg);
+    if (new_message == NULL) {
+        return NULL;
     }
 
+    size_t new_msg_len = strlen(new_message);
+    size_t num_blocks = new_msg_len / KEY_LENGTH;
+    size_t i;
+    for (i = 0 ; i < num_blocks; i++) {
+        char *curr_block = new_message + (i * KEY_LENGTH);
+        steg_encrypt_block(curr_block, key, KEY_LENGTH);
+    }
+
+    return new_message;
 }
 
 

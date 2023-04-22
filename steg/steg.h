@@ -8,6 +8,7 @@
 #include "../wav/wavread.h"  // WAV reading
 
 
+#define PADDING_CHARACTER ' '
 #define KEY_LENGTH 8
 
 
@@ -30,9 +31,15 @@ int steg_decode_wav(const char *in_file, const char *key, char *message, size_t 
 
 // Encrypt a single block of the message up to KEY_LENGTH bytes
 void steg_encrypt_block(char *message_ptr, char* key, size_t key_len);
-void steg_encrypt_block(char *message_ptr, char* key, size_t key_len);
+void steg_decrypt_block(char *message_ptr, char* key, size_t key_len);
 
 int message_fits(size_t message_length, size_t proposed_file_size, size_t key_length);
+size_t compute_available_space(size_t file_size);
+
+
+char *get_encrypted_message(char *original_msg, char *key);
+
+
 
 
 
