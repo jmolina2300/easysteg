@@ -260,7 +260,7 @@ void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
     int success = steg_encode_bmp(
         inputFile.c_str(),                    // input file
         outputFile.c_str(),                   // output file
-        "asd",                                // key
+        "AAAAAAAA",                           // key
         FormEncode->tbxMessage->Text.c_str(), // the message
         FormEncode->tbxMessage->Text.Length() // the length
         );
@@ -289,7 +289,7 @@ void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
     int success = steg_encode_wav(
         inputFile.c_str(),                    // input file
         outputFile.c_str(),                   // output file
-        "asd",                                // key
+        "AAAAAAAA",                           // key
         FormEncode->tbxMessage->Text.c_str(), // the message
         FormEncode->tbxMessage->Text.Length() // the length
         );
@@ -377,11 +377,11 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
     int decodeSuccess;
     if (fileType == T_SOUND)
     {
-        decodeSuccess = steg_decode_wav(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace);
+        decodeSuccess = steg_decode_wav(chosenFileName.c_str(), "AAAAAAAA", decodeBuffer, availableStegSpace);
     }
     else if (fileType == T_IMAGE)
     {
-        decodeSuccess = steg_decode_bmp(chosenFileName.c_str(), NULL, decodeBuffer, availableStegSpace);
+        decodeSuccess = steg_decode_bmp(chosenFileName.c_str(), "AAAAAAAA", decodeBuffer, availableStegSpace);
     }
 
     if (decodeSuccess) {

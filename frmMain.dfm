@@ -20,7 +20,7 @@ object FormMain: TFormMain
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 841
+    Width = 833
     Height = 201
     Align = alTop
     BevelOuter = bvNone
@@ -73,8 +73,8 @@ object FormMain: TFormMain
   object Panel2: TPanel
     Left = 0
     Top = 201
-    Width = 841
-    Height = 283
+    Width = 833
+    Height = 275
     Align = alClient
     BevelOuter = bvNone
     Caption = 'Panel2'
@@ -82,8 +82,8 @@ object FormMain: TFormMain
     object DBChart1: TDBChart
       Left = 0
       Top = 25
-      Width = 841
-      Height = 258
+      Width = 833
+      Height = 250
       AllowPanning = pmNone
       BackWall.Brush.Color = clWhite
       BackWall.Brush.Style = bsClear
@@ -120,8 +120,8 @@ object FormMain: TFormMain
     object ScrollBox1: TScrollBox
       Left = 0
       Top = 25
-      Width = 841
-      Height = 258
+      Width = 833
+      Height = 250
       HorzScrollBar.Tracking = True
       VertScrollBar.ThumbSize = 12
       VertScrollBar.Tracking = True
@@ -145,7 +145,7 @@ object FormMain: TFormMain
     object Panel3: TPanel
       Left = 0
       Top = 0
-      Width = 841
+      Width = 833
       Height = 25
       Align = alTop
       BevelOuter = bvNone

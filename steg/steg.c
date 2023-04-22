@@ -97,7 +97,7 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
 
 
     // Check if the message is too long to fit in the image
-    if (!message_fits(message_size, bmp.info.datasize, KEY_LENGTH))
+    if (!message_fits(message_size, bmp.info.datasize))
     {
         bmp_destroy(&bmp);
         return 0;
@@ -105,8 +105,10 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
 
     // Overwrite LSBs with 0
     size_t i;
-    for (i = 0; i < bmp.info.datasize; i++) {
-        shift_out_byte_to_array(bmp.data_raw, 0, i * 8);
+    size_t num_usable_bytes = compute_available_space(bmp.info.datasize);
+    for (i = 0; i < num_usable_bytes; i++) {
+        size_t offset = i * 8;
+        shift_out_byte_to_array(bmp.data_raw, 0, offset);
     }
 
 
@@ -190,7 +192,7 @@ int steg_encode_wav(const char *in_file, const char *out_file, char *key, char *
 
 
     // Get the length of the message and key in bits
-    if (!message_fits(message_size, &wav.info.numSamples, KEY_LENGTH))
+    if (!message_fits(message_size, wav.info.numSamples))
     {
         // The message is too long to fit in the WAV file
         
@@ -279,15 +281,15 @@ int steg_decode_wav(const char *in_file, const char *key, char *message, size_t 
  * @param msg_len 
  * @return char* 
  */
-char *get_padded_message(char *msg)
+char *get_padded_message(const char *msg)
 {
-    size_t msg_len = strlen(msg);
     char *padded_msg = NULL;
+    size_t msg_len = strlen(msg);
     size_t msg_padding = KEY_LENGTH - (msg_len % KEY_LENGTH);
     size_t padded_msg_len = msg_len + msg_padding;
 
 
-    padded_msg = calloc(padded_msg_len, sizeof(char));
+    padded_msg = (char*)calloc(padded_msg_len + 1, sizeof(char));
     if (padded_msg == NULL)
     {
         return NULL;
@@ -296,9 +298,11 @@ char *get_padded_message(char *msg)
     // Copy the original message into the padded message buffer
     memcpy(padded_msg, msg, msg_len);
     size_t i;
-    for(i =  msg_len; i < msg_len + msg_padding; i++) {
+    for(i =  msg_len; i < padded_msg_len; i++) {
         padded_msg[i] = PADDING_CHARACTER;
     }
+
+    padded_msg[padded_msg_len] = '\0';
     return padded_msg;
 }
 
@@ -316,10 +320,10 @@ char *get_padded_message(char *msg)
  * @param key_length 
  * @return int 
  */
-int message_fits(size_t message_length, size_t file_size, size_t key_length)
+int message_fits(size_t message_length, size_t file_size)
 {
     size_t available_space = file_size / 8;
-    available_space -= available_space % key_length;
+    available_space -= available_space % KEY_LENGTH;
 
     if (message_length > available_space)
     {
@@ -338,7 +342,7 @@ int message_fits(size_t message_length, size_t file_size, size_t key_length)
  * @param key 
  * @param key_len 
  */
-void steg_encrypt_block(char *message_ptr, char* key, size_t key_len)
+void steg_encrypt_block(char *message_ptr, const char* key, size_t key_len)
 {
     size_t i;
     for (i = 0; i < key_len; i++)
@@ -394,7 +398,7 @@ char *get_encrypted_message(char *original_msg, char *key)
  * @param key 
  * @param key_len 
  */
-void steg_decrypt_block(char *message_ptr, char* key, size_t key_len)
+void steg_decrypt_block(char *message_ptr, const char * key, size_t key_len)
 {
     size_t i;
     for (i = 0; i < key_len && (message_ptr[i] != '\0'); i++)
