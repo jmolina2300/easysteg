@@ -5,12 +5,12 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="easysteg.exe"/>
     <OBJFILES value="easysteg.obj frmMain.obj wavread.obj frmEncode.obj bmpread.obj steg.obj 
-      frmDecode.obj"/>
+      frmDecode.obj frmGetKey.obj"/>
     <RESFILES value="easysteg.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) frmMain.dfm frmEncode.dfm frmDecode.dfm"/>
+    <RESDEPEN value="$(RESFILES) frmMain.dfm frmEncode.dfm frmDecode.dfm frmGetKey.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value="dbrtl.lib tee.lib teedb.lib rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib teedb.lib tee.lib dbrtl.lib"/>
@@ -64,6 +64,7 @@
       <FILE FILENAME="bmpread.cpp" FORMNAME="" UNITNAME="bmpread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="steg.cpp" FORMNAME="" UNITNAME="steg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="frmDecode.cpp" FORMNAME="FormDecode" UNITNAME="frmDecode" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="frmGetKey.cpp" FORMNAME="FormGetKey" UNITNAME="frmGetKey" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
