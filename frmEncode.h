@@ -23,8 +23,11 @@ __published:
     TLabel *Label1;
     TLabel *Label2;
     TLabel *lblBytesLeft;
+    TRichEdit *tbxKey;
+    TLabel *Label3;
     void __fastcall btnOKClick(TObject *Sender);
     void __fastcall tbxMessageChange(TObject *Sender);
+    void __fastcall FormShow(TObject *Sender);
 private:
 
     size_t m_maxMessageSize;

@@ -6,6 +6,7 @@
 #include "frmMain.h"
 #include "frmEncode.h"
 #include "frmDecode.h"
+#include "frmGetKey.h"
 #include "wavread.h"
 #include "bmpread.h"
 #include "steg.h"
@@ -238,31 +239,20 @@ void __fastcall TFormMain::btnOpenClick(TObject *Sender)
 
 
 
-void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
+void __fastcall TFormMain::EncodeImageFile(const AnsiString &message, const AnsiString &key)
 {
     AnsiString inputFile;
     AnsiString outputFile;
     inputFile.printf("%s", tbxFileName->Text.c_str() );
     outputFile = RemoveExtension(inputFile) + "-steg.bmp";
 
-    // Add padding to the message
-    size_t messagePadding = KEY_LENGTH - (FormEncode->tbxMessage->Text.Length() % KEY_LENGTH);
-    if (messagePadding != KEY_LENGTH) {
-        FormEncode->tbxMessage->Text.SetLength(FormEncode->tbxMessage->Text.Length() + messagePadding);
-        for (size_t i = 0; i < messagePadding; i++) {
-            FormEncode->tbxMessage->Text =  FormEncode->tbxMessage->Text + " ";
-        }
-    }
-    AnsiString msg;
-    msg.printf("Bytes required for padding: %d", messagePadding,FormEncode->tbxMessage->Text[FormEncode->tbxMessage->Text.Length() -1] );
-    ShowMessage(msg);
 
     int success = steg_encode_bmp(
         inputFile.c_str(),                    // input file
         outputFile.c_str(),                   // output file
-        "AAAAAAAA",                           // key
-        FormEncode->tbxMessage->Text.c_str(), // the message
-        FormEncode->tbxMessage->Text.Length() // the length
+        key.c_str(),                          // key
+        message.c_str(), // the message
+        message.Length() // the length
         );
     if (success) {
         AnsiString successMsg = "Message wrriten to " + ExtractFileName(outputFile);
@@ -272,14 +262,14 @@ void __fastcall TFormMain::EncodeImageFile(const AnsiString &s)
         AnsiString msg;
         msg.printf("Failed to encode Message.\n\n"
                    "length of message: %d\n",
-                   FormEncode->tbxMessage->Text.Length());
+                   message.Length());
         Application->MessageBox(msg.c_str(),
                                 "Error", MB_OK | MB_ICONASTERISK);
     }
 
 }
 
-void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
+void __fastcall TFormMain::EncodeSoundFile(const AnsiString &message, const AnsiString &key)
 {
     AnsiString inputFile;
     AnsiString outputFile;
@@ -289,9 +279,9 @@ void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
     int success = steg_encode_wav(
         inputFile.c_str(),                    // input file
         outputFile.c_str(),                   // output file
-        "AAAAAAAA",                           // key
-        FormEncode->tbxMessage->Text.c_str(), // the message
-        FormEncode->tbxMessage->Text.Length() // the length
+        key.c_str(),                          // key
+        message.c_str(), // the message
+        message.Length() // the length
         );
     if (success) {
         AnsiString successMsg = "Message wrriten to " + ExtractFileName(outputFile);
@@ -301,7 +291,7 @@ void __fastcall TFormMain::EncodeSoundFile(const AnsiString &s)
         AnsiString msg;
         msg.printf("Failed to encode Message.\n\n"
                    "length of message: %d\n",
-                   FormEncode->tbxMessage->Text.Length());
+                   message.Length());
         Application->MessageBox(msg.c_str(),
                                 "Error", MB_OK | MB_ICONASTERISK);
     }
@@ -323,9 +313,13 @@ void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
     FileType fileType = GetFileType(chosenFileName);
 
     if (fileType == T_SOUND) {
-        EncodeSoundFile(FormEncode->tbxMessage->Text);
+        EncodeSoundFile(
+            FormEncode->tbxMessage->Text,
+            FormEncode->tbxKey->Text);
     } else if (fileType == T_IMAGE) {
-        EncodeImageFile(FormEncode->tbxMessage->Text);
+        EncodeImageFile(
+            FormEncode->tbxMessage->Text,
+            FormEncode->tbxKey->Text);
     } else {
         ShowMessage("What kind of abomination is this?");
     }
@@ -357,13 +351,7 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
         return;
     }
 
-    char *decodeBuffer = (char*)calloc(availableStegSpace + 1, sizeof(byte));
-    if (decodeBuffer == NULL) {
-        Application->MessageBox("Failed to decode message.\n\n"
-                                "Could not allocate memory for message buffer",
-                                "Error", MB_OK | MB_ICONASTERISK);
-        return;
-    }
+
 #ifdef DEBUG_STEG
 
     AnsiString msg;
@@ -373,15 +361,44 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
     ShowMessage(msg);
 #endif DEBUG_STEG
 
+    // Get the key from the user
+    FormGetKey->ShowModal();
+    if (FormGetKey->ModalResult != mrOk) {
+        return;
+    }
+    if (FormGetKey->KeyLength < KEY_LENGTH) {
+        Application->MessageBox("Key too short!\n\n",
+                                "Error", MB_OK | MB_ICONASTERISK);
+        return;
+    }
 
+    AnsiString key;
+    key = FormGetKey->tbxKey->Text;
+    
+    char *decodeBuffer = (char*)calloc(availableStegSpace + 1, sizeof(byte));
+    if (decodeBuffer == NULL) {
+        Application->MessageBox("Failed to decode message.\n\n"
+                                "Could not allocate memory for message buffer",
+                                "Error", MB_OK | MB_ICONASTERISK);
+        return;
+    }
+    
     int decodeSuccess;
     if (fileType == T_SOUND)
     {
-        decodeSuccess = steg_decode_wav(chosenFileName.c_str(), "AAAAAAAA", decodeBuffer, availableStegSpace);
+        decodeSuccess = steg_decode_wav(
+            chosenFileName.c_str(),
+            key.c_str(),
+            decodeBuffer,
+            availableStegSpace);
     }
     else if (fileType == T_IMAGE)
     {
-        decodeSuccess = steg_decode_bmp(chosenFileName.c_str(), "AAAAAAAA", decodeBuffer, availableStegSpace);
+        decodeSuccess = steg_decode_bmp(
+            chosenFileName.c_str(),
+            key.c_str(),
+            decodeBuffer,
+            availableStegSpace);
     }
 
     if (decodeSuccess) {

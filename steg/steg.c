@@ -163,9 +163,14 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
         num_bytes_to_read = buffer_size;
     }
 
+    // Intialize the buffer to the contents of the key repeatedly
+    size_t i;
+    //for (i = 0; i < buffer_size; i++) {
+    //    buffer[i] = key[i % KEY_LENGTH];
+    //}
+
     
     // Run through the file data and fish out the message
-    size_t i;
     for (i = 0; i < num_bytes_to_read; i++)
     {
         uint8_t byte = 0;
@@ -173,6 +178,8 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
         shift_in_byte_from_array(&byte, bmp.data_raw, offset);
         buffer[i] = byte;
     }
+
+
     
     // Decrypt all blocks 
     size_t num_blocks = num_bytes_to_read / KEY_LENGTH;
@@ -360,23 +367,7 @@ int message_fits(size_t message_length, size_t file_size)
 }
 
 
-/**
- * @brief steg_encrypt_block
- * 
- * Encrypts a block of data byte-per-byte using the key
- * 
- * @param message_ptr 
- * @param key 
- * @param key_len 
- */
-void steg_encrypt_block(char *message_ptr, const char* key, size_t key_len)
-{
-    size_t i;
-    for (i = 0; i < key_len; i++)
-    {
-        message_ptr[i] = message_ptr[i] ^ key[i];
-    }
-}
+
 
 
 char *get_encrypted_message(char *original_msg, char *key)
@@ -401,19 +392,27 @@ char *get_encrypted_message(char *original_msg, char *key)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * @brief steg_encrypt_block
+ * 
+ * Encrypts a block of data byte-per-byte using the key
+ * 
+ * @param message_ptr 
+ * @param key 
+ * @param key_len 
+ */
+void steg_encrypt_block(char *message_ptr, const char* key, size_t key_len)
+{
+    size_t i;
+    for (i = 0; i < key_len; i++)
+    {
+        // Make sure the current character doesn't match one in the key
+        message_ptr[i] = message_ptr[i] ^ key[i];
+        if (message_ptr[i] == '\0') {
+            message_ptr[i] = message_ptr[i] ^ key[i];
+        }
+    }
+}
 
 
 /**
@@ -428,29 +427,15 @@ char *get_encrypted_message(char *original_msg, char *key)
 void steg_decrypt_block(char *message_ptr, const char * key, size_t key_len)
 {
     size_t i;
-    for (i = 0; i < key_len && (message_ptr[i] != '\0'); i++)
+    for (i = 0; i < key_len && (message_ptr[i] != 0) ; i++)
     {
+        // Make sure the current character doesn't match one in the key
         message_ptr[i] = message_ptr[i] ^ key[i];
+        if (message_ptr[i] == '\0') {
+            message_ptr[i] = message_ptr[i] ^ key[i];
+        }
     }
 }
 
-
-char *get_decrypted_message(char *original_msg, char *key)
-{
-    char *new_message = get_padded_message(original_msg);
-    if (new_message == NULL) {
-        return NULL;
-    }
-
-    size_t new_msg_len = strlen(new_message);
-    size_t num_blocks = new_msg_len / KEY_LENGTH;
-    size_t i;
-    for (i = 0 ; i < num_blocks; i++) {
-        char *curr_block = new_message + (i * KEY_LENGTH);
-        steg_encrypt_block(curr_block, key, KEY_LENGTH);
-    }
-
-    return new_message;
-}
 
 

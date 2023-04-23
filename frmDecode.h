@@ -16,9 +16,6 @@ __published:	// IDE-managed Components
     TRichEdit *tbxMessage;
     TButton *btnOK;
     TPanel *Panel1;
-    TRichEdit *RichEdit1;
-    TButton *btnDecode;
-    TLabel *Label1;
 private:	// User declarations
 public:		// User declarations
     __fastcall TFormDecode(TComponent* Owner);

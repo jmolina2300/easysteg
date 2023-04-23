@@ -22,6 +22,18 @@ void __fastcall TFormEncode::btnOKClick(TObject *Sender)
         ShowMessage("Message too large!");
         return;
     }
+    if (messageSize == 0) {
+        ShowMessage("No message to encode!");
+        return;
+    }
+
+    size_t keySize = tbxKey->Text.Length();
+    size_t STEG_KEY_LENGTH = tbxKey->MaxLength;
+    if (keySize < STEG_KEY_LENGTH) {
+        ShowMessage("Key is too short (must be 8 characters)");
+        return;
+    }
+
 
     m_messageSize = messageSize;
     this->ModalResult = mrOk;
@@ -53,6 +65,14 @@ void __fastcall TFormEncode::tbxMessageChange(TObject *Sender)
 
     lblBytesLeft->Caption = bytesLeftText;
     lblBytesLeft->Update();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TFormEncode::FormShow(TObject *Sender)
+{
+    tbxMessage->Clear();
+    tbxKey->Clear();
 }
 //---------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 object FormMain: TFormMain
-  Left = 726
-  Top = 148
+  Left = 502
+  Top = 121
   Width = 849
   Height = 535
   Caption = 'Easysteg v0.0.0'

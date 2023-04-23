@@ -57,8 +57,8 @@ private:	// User declarations
     void __fastcall DisplaySoundFile(const AnsiString &s);
     void __fastcall DisplayImageFile(const AnsiString &s);
 
-    void __fastcall EncodeSoundFile(const AnsiString &s);
-    void __fastcall EncodeImageFile(const AnsiString &s);
+    void __fastcall EncodeSoundFile(const AnsiString &message, const AnsiString &key);
+    void __fastcall EncodeImageFile(const AnsiString &message, const AnsiString &key);
 public:		// User declarations
     __fastcall TFormMain(TComponent* Owner);
 };
