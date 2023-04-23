@@ -93,7 +93,10 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
 {
     // Read the BMP file
     BmpImage bmp;
-    bmp_read_from_file(&bmp, in_file);
+    if (!bmp_read_from_file(&bmp, in_file))
+    {
+        return 0;
+    }
 
 
     // Check if the message is too long to fit in the image
@@ -141,7 +144,7 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
 }
 
 // Decode a message from the bmp file and store it in the message buffer
-int steg_decode_bmp(const char *in_file, const char *key, char *message, size_t buffer_size)
+int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t buffer_size)
 {
 
     // Read in the BMP file
@@ -151,6 +154,7 @@ int steg_decode_bmp(const char *in_file, const char *key, char *message, size_t 
         return 0;
     }
 
+    // Compute number of possible bytes to read
     size_t num_bytes_to_read;
     size_t max_msg_len = compute_available_space(bmp.info.datasize);
     if (buffer_size > max_msg_len) {
@@ -167,17 +171,15 @@ int steg_decode_bmp(const char *in_file, const char *key, char *message, size_t 
         uint8_t byte = 0;
         int offset = i * 8;
         shift_in_byte_from_array(&byte, bmp.data_raw, offset);
-        message[i] = byte;
+        buffer[i] = byte;
     }
     
-
+    // Decrypt all blocks 
     size_t num_blocks = num_bytes_to_read / KEY_LENGTH;
     for (i = 0; i < num_blocks; i++) {
-        char *curr_block = message + (i * KEY_LENGTH);
+        char *curr_block = buffer + (i * KEY_LENGTH);
         steg_decrypt_block(curr_block, key, KEY_LENGTH);
     }
-
-
 
     // Destroy the bmp
     bmp_destroy(&bmp); 
@@ -188,37 +190,55 @@ int steg_encode_wav(const char *in_file, const char *out_file, char *key, char *
 {
     // Read the WAV file
     WaveFile wav;
-    wav_read_from_file(&wav, in_file);
+    if (!wav_read_from_file(&wav, in_file))
+    {
+        return 0;
+    }
 
-
-    // Get the length of the message and key in bits
+    // Check if the message is too long to fit in the image
     if (!message_fits(message_size, wav.info.numSamples))
     {
-        // The message is too long to fit in the WAV file
-        
         wav_destroy(&wav);
         return 0;
     }
 
-    uint16_t *sampleData = (uint16_t*)wav.data;
+    uint16_t *sampleData = (uint16_t*)wav.data; 
+
+    // Overwrite LSBs with 0
+    size_t i;
+    size_t num_usable_bytes = compute_available_space(wav.info.numSamples);
+    for (i = 0; i < num_usable_bytes; i++)
+    {
+        int offset = i * 8;
+        shift_out_byte_to_array_16bit(sampleData, 0, offset);
+    }
+
+    // Create the encrypted message
+    char *encrypted_message = get_encrypted_message(message, key);
+    if (encrypted_message == NULL) 
+    {
+        wav_destroy(&wav);
+        return 0;
+    }
+    size_t encrypted_message_len = strlen(encrypted_message);
+
+
 
     // write the data to the file
-    size_t i;
-    for (i = 0; i < message_size; i++)
+    for (i = 0; i < encrypted_message_len; i++)
     {
-        // Get the byte from the message and shift it out to the array
-        uint8_t byte = message[i];
+        uint8_t byte = encrypted_message[i];
         int offset = i * 8;
         shift_out_byte_to_array_16bit(sampleData, byte, offset);
     }
 
-
+    // write the wav to the file
     if (!wav_write_to_file(&wav, out_file))
     {
-        // Error occurred, but still need to destroy the bmp
+        // Error occurred, but still need to destroy the wav
     }
+    free(encrypted_message);
     wav_destroy(&wav);
-
     return 1;
 }
 
@@ -232,10 +252,10 @@ int steg_encode_wav(const char *in_file, const char *out_file, char *key, char *
  * @param in_file 
  * @param key 
  * @param message 
- * @param max_message_size 
+ * @param buffer_size 
  * @return int 
  */
-int steg_decode_wav(const char *in_file, const char *key, char *message, size_t max_message_size)
+int steg_decode_wav(const char *in_file, const char *key, char *buffer, size_t buffer_size)
 {
     // Read in the WAV file
     WaveFile wav;
@@ -244,29 +264,36 @@ int steg_decode_wav(const char *in_file, const char *key, char *message, size_t 
         return 0;
     }
 
-    size_t message_length_bits = max_message_size * 8;
-    if (message_length_bits > wav.info.numSamples)
-    {
-        // The message you're looking for couldn't possibly fit in this file
-        wav_destroy(&wav);
-        return 0;
+    // Compute number of possible bytes to read
+    size_t num_bytes_to_read;
+    size_t max_msg_len = compute_available_space(wav.info.numSamples);
+    if (buffer_size > max_msg_len) {
+        num_bytes_to_read = max_msg_len;
+    } else {
+        num_bytes_to_read = buffer_size;
     }
 
     uint16_t *sampleData = (uint16_t*)wav.data;
 
     // Run through the file data and fish out the message
     size_t i;
-    for (i = 0; i < max_message_size; i++)
+    for (i = 0; i < num_bytes_to_read; i++)
     {
         uint8_t byte = 0;
         int offset = i * 8;
         shift_in_byte_from_array_16bit(&byte, sampleData, offset);
-        message[i] = byte;
+        buffer[i] = byte;
+    }
+
+    // Decrypt all blocks
+    size_t num_blocks = num_bytes_to_read / KEY_LENGTH;
+    for (i = 0; i < num_blocks; i++) {
+        char *curr_block = buffer + (i * KEY_LENGTH);
+        steg_decrypt_block(curr_block, key, KEY_LENGTH);
     }
 
     // Destroy the wav
     wav_destroy(&wav); 
-
     return 1;
 }
 

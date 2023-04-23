@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     
 
     // Encode the message into the file
-    if (steg_encode_wav(in_file, out_file, key, message, 1000))
+    if (steg_encode_wav(in_file, out_file, key, message, strlen(message)))
     {
         printf("SUCCESS: encoded message into WAV file %s\n", out_file);
     }
