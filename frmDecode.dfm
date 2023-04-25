@@ -3,7 +3,7 @@ object FormDecode: TFormDecode
   Top = 186
   Width = 416
   Height = 429
-  Caption = 'FormDecode'
+  Caption = 'Decoded Message'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,29 +18,11 @@ object FormDecode: TFormDecode
     Left = 0
     Top = 0
     Width = 408
-    Height = 360
+    Height = 398
     Align = alClient
     HideScrollBars = False
     ScrollBars = ssBoth
     TabOrder = 0
     WordWrap = False
-  end
-  object Panel1: TPanel
-    Left = 0
-    Top = 360
-    Width = 408
-    Height = 38
-    Align = alBottom
-    BevelOuter = bvNone
-    TabOrder = 1
-    object btnOK: TButton
-      Left = 328
-      Top = 8
-      Width = 75
-      Height = 25
-      Caption = 'OK'
-      ModalResult = 1
-      TabOrder = 0
-    end
   end
 end

@@ -14,8 +14,6 @@ class TFormDecode : public TForm
 {
 __published:	// IDE-managed Components
     TRichEdit *tbxMessage;
-    TButton *btnOK;
-    TPanel *Panel1;
 private:	// User declarations
 public:		// User declarations
     __fastcall TFormDecode(TComponent* Owner);
