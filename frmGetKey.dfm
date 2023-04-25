@@ -3,7 +3,7 @@ object FormGetKey: TFormGetKey
   Top = 134
   Width = 240
   Height = 200
-  Caption = 'Enter Decode Key'
+  Caption = 'Decode'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,25 +23,28 @@ object FormGetKey: TFormGetKey
     Caption = 'Enter key'
   end
   object tbxKey: TRichEdit
-    Left = 64
+    Left = 80
     Top = 56
-    Width = 97
+    Width = 65
     Height = 25
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Consolas'
     Font.Style = []
+    Lines.Strings = (
+      'AAAAAAAA')
     MaxLength = 8
     ParentFont = False
     TabOrder = 0
   end
   object btnOK: TButton
     Left = 72
-    Top = 112
+    Top = 96
     Width = 83
     Height = 25
     Caption = 'OK'
+    Default = True
     ModalResult = 1
     TabOrder = 1
     OnClick = btnOKClick

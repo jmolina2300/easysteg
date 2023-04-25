@@ -1,6 +1,6 @@
 object FormMain: TFormMain
-  Left = 502
-  Top = 121
+  Left = 490
+  Top = 179
   Width = 849
   Height = 535
   Caption = 'Easysteg v0.0.0'
@@ -20,7 +20,7 @@ object FormMain: TFormMain
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 833
+    Width = 841
     Height = 201
     Align = alTop
     BevelOuter = bvNone
@@ -40,7 +40,7 @@ object FormMain: TFormMain
       Caption = 'Details'
     end
     object btnOpen: TButton
-      Left = 272
+      Left = 304
       Top = 16
       Width = 75
       Height = 25
@@ -51,7 +51,7 @@ object FormMain: TFormMain
     object tbxFileInfo: TRichEdit
       Left = 64
       Top = 64
-      Width = 281
+      Width = 313
       Height = 129
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -65,7 +65,7 @@ object FormMain: TFormMain
     object tbxFileName: TEdit
       Left = 64
       Top = 16
-      Width = 201
+      Width = 233
       Height = 21
       TabOrder = 2
     end
@@ -73,8 +73,8 @@ object FormMain: TFormMain
   object Panel2: TPanel
     Left = 0
     Top = 201
-    Width = 833
-    Height = 275
+    Width = 841
+    Height = 283
     Align = alClient
     BevelOuter = bvNone
     Caption = 'Panel2'
@@ -82,8 +82,8 @@ object FormMain: TFormMain
     object DBChart1: TDBChart
       Left = 0
       Top = 25
-      Width = 833
-      Height = 250
+      Width = 841
+      Height = 258
       AllowPanning = pmNone
       BackWall.Brush.Color = clWhite
       BackWall.Brush.Style = bsClear
@@ -120,8 +120,8 @@ object FormMain: TFormMain
     object ScrollBox1: TScrollBox
       Left = 0
       Top = 25
-      Width = 833
-      Height = 250
+      Width = 841
+      Height = 258
       HorzScrollBar.Tracking = True
       VertScrollBar.ThumbSize = 12
       VertScrollBar.Tracking = True
@@ -145,7 +145,7 @@ object FormMain: TFormMain
     object Panel3: TPanel
       Left = 0
       Top = 0
-      Width = 833
+      Width = 841
       Height = 25
       Align = alTop
       BevelOuter = bvNone
@@ -172,7 +172,7 @@ object FormMain: TFormMain
   object OpenDialog1: TOpenDialog
     Filter = 'Bitmap Files (*.bmp)|*.*|WAV Files (*.wav)|*.wav'
     FilterIndex = 0
-    Left = 352
+    Left = 392
     Top = 16
   end
   object MainMenu1: TMainMenu

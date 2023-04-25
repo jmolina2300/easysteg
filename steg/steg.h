@@ -36,7 +36,7 @@ void steg_decrypt_block(char *message_ptr, const char *key, size_t key_len);
 int message_fits(size_t message_length, size_t proposed_file_size);
 size_t compute_available_space(size_t file_size);
 
-
+// Create an encrypted version of the plaintext 
 char *get_encrypted_message(char *original_msg, char *key);
 
 
