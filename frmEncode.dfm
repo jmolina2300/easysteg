@@ -1,7 +1,7 @@
 object FormEncode: TFormEncode
   Left = 290
   Top = 134
-  BorderStyle = bsDialog
+  BorderStyle = bsSingle
   Caption = 'Encode'
   ClientHeight = 310
   ClientWidth = 408
@@ -9,7 +9,7 @@ object FormEncode: TFormEncode
   ParentFont = True
   KeyPreview = True
   OldCreateOrder = True
-  Position = poScreenCenter
+  Position = poOwnerFormCenter
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -35,7 +35,7 @@ object FormEncode: TFormEncode
     Caption = '0'
   end
   object Label3: TLabel
-    Left = 176
+    Left = 208
     Top = 280
     Width = 18
     Height = 13
@@ -43,7 +43,7 @@ object FormEncode: TFormEncode
   end
   object btnOK: TButton
     Left = 316
-    Top = 208
+    Top = 240
     Width = 75
     Height = 25
     Caption = 'OK'
@@ -53,7 +53,7 @@ object FormEncode: TFormEncode
   end
   object btnCancel: TButton
     Left = 316
-    Top = 238
+    Top = 270
     Width = 75
     Height = 25
     Cancel = True
@@ -66,19 +66,23 @@ object FormEncode: TFormEncode
     Top = 40
     Width = 273
     Height = 225
+    HideScrollBars = False
+    ScrollBars = ssVertical
     TabOrder = 2
     OnChange = tbxMessageChange
   end
   object tbxKey: TRichEdit
-    Left = 208
+    Left = 232
     Top = 272
-    Width = 89
+    Width = 65
     Height = 25
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Consolas'
     Font.Style = []
+    Lines.Strings = (
+      'AAAAAAAA')
     MaxLength = 8
     ParentFont = False
     TabOrder = 3

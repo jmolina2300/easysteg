@@ -1,7 +1,7 @@
 object FormDecode: TFormDecode
-  Left = 346
-  Top = 171
-  Width = 420
+  Left = 350
+  Top = 186
+  Width = 416
   Height = 429
   Caption = 'FormDecode'
   Color = clBtnFace
@@ -11,13 +11,14 @@ object FormDecode: TFormDecode
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  Position = poOwnerFormCenter
   PixelsPerInch = 96
   TextHeight = 13
   object tbxMessage: TRichEdit
     Left = 0
     Top = 0
-    Width = 404
-    Height = 341
+    Width = 408
+    Height = 360
     Align = alClient
     HideScrollBars = False
     ScrollBars = ssBoth
@@ -26,14 +27,14 @@ object FormDecode: TFormDecode
   end
   object Panel1: TPanel
     Left = 0
-    Top = 341
-    Width = 404
-    Height = 49
+    Top = 360
+    Width = 408
+    Height = 38
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
     object btnOK: TButton
-      Left = 320
+      Left = 328
       Top = 8
       Width = 75
       Height = 25

@@ -115,7 +115,7 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     }
 
 
-
+    // Get the encrypted version of the message
     char *encrypted_message = get_encrypted_message(message, key);
     if (encrypted_message == NULL) 
     {
@@ -124,7 +124,7 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     }
     size_t encrypted_message_len = strlen(encrypted_message);
 
-    // write the data to the file
+    // write the message to the bmp data array
     for (i = 0; i < encrypted_message_len; i++)
     {
         // Get the byte from the message and shift it out to the array
@@ -163,14 +163,9 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
         num_bytes_to_read = buffer_size;
     }
 
-    // Intialize the buffer to the contents of the key repeatedly
-    size_t i;
-    //for (i = 0; i < buffer_size; i++) {
-    //    buffer[i] = key[i % KEY_LENGTH];
-    //}
 
-    
     // Run through the file data and fish out the message
+    size_t i;
     for (i = 0; i < num_bytes_to_read; i++)
     {
         uint8_t byte = 0;
@@ -178,7 +173,6 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
         shift_in_byte_from_array(&byte, bmp.data_raw, offset);
         buffer[i] = byte;
     }
-
 
     
     // Decrypt all blocks 
@@ -258,7 +252,7 @@ int steg_encode_wav(const char *in_file, const char *out_file, char *key, char *
  * 
  * @param in_file 
  * @param key 
- * @param message 
+ * @param buffer
  * @param buffer_size 
  * @return int 
  */
@@ -308,11 +302,10 @@ int steg_decode_wav(const char *in_file, const char *key, char *buffer, size_t b
 
 /**
  * @brief get_padded_message
+ *
+ * Pads the message to make it a multiple of KEY_LENGTH
  * 
- * Pads the message with 0's to make it a multiple of KEY_LENGTH
- * 
- * @param msg 
- * @param msg_len 
+ * @param msg
  * @return char* 
  */
 char *get_padded_message(const char *msg)
@@ -387,7 +380,6 @@ char *get_encrypted_message(char *original_msg, char *key)
 
     return new_message;
 }
-
 
 
 
