@@ -1,6 +1,6 @@
 object FormMain: TFormMain
-  Left = 490
-  Top = 179
+  Left = 347
+  Top = 136
   Width = 849
   Height = 535
   Caption = 'Easysteg v0.0.0'
@@ -15,6 +15,7 @@ object FormMain: TFormMain
   Menu = MainMenu1
   OldCreateOrder = False
   Position = poScreenCenter
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
@@ -59,6 +60,8 @@ object FormMain: TFormMain
       Font.Name = 'Consolas'
       Font.Style = []
       ParentFont = False
+      ReadOnly = True
+      ScrollBars = ssHorizontal
       TabOrder = 1
       WordWrap = False
     end

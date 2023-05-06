@@ -87,9 +87,7 @@ void shift_in_byte_from_array(uint8_t *dest_byte, uint8_t *src, int offset) {
 
 
 
-
-// Encode a message into a BMP file
-int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *message, size_t message_size)
+int __steg_encode_bmp_old(const char *in_file, const char *out_file, char *key, char *message, size_t message_size)
 {
     // Read the BMP file
     BmpImage bmp;
@@ -143,8 +141,163 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     return 1;
 }
 
+// Encode a message into a BMP file
+int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *message, size_t message_size)
+{   
+    BmpImage in_image;
+    BmpImage out_image;
+
+    const int MSG_CHUNK_SIZE = KEY_LENGTH;
+    const int BMP_CHUNK_SIZE = KEY_LENGTH * 8;
+
+    char msg_buffer[MSG_CHUNK_SIZE + 1];
+    char bmp_buffer[MSG_CHUNK_SIZE * 8 + 1];
+
+    if (!bmp_open_read(&in_image, in_file)) {
+        return 0;
+    }
+    bmp_copy_header(&out_image, &in_image);
+    if (!bmp_open_write(&out_image, out_file)) {
+        bmp_close(&in_image);
+        return 0;
+    }
+
+    // Check if the message is too long to fit in the image
+    if (!message_fits(message_size, in_image.info.datasize))
+    {
+        bmp_close(&in_image);
+        bmp_close(&out_image);
+        return 0;
+    }
+
+
+    // The entire message can definitely fit, with possible padding at the end...
+    size_t num_blocks_in_msg = message_size / KEY_LENGTH;
+    size_t i;
+    for (i = 0; i < num_blocks_in_msg; i++)
+    {
+        char *current_msg_block = message + (i * KEY_LENGTH);
+        copy_one_block_of_message(msg_buffer, current_msg_block);
+
+
+        // Read in a chunk of pixel data to encode into
+        bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+        encode_one_block(bmp_buffer, msg_buffer, KEY_LENGTH);
+
+        // Write the chunk of pixel data to the output file
+        bmp_write(&out_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+    }
+
+    // Now, encode zeros into to the remaining LSBs
+    memset(msg_buffer, 0, MSG_CHUNK_SIZE);
+
+
+
+    // write the remaining bytes to the output file
+    size_t bytes_read = 0;
+    do {
+        bytes_read = bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+        if (bytes_read == 0) {
+            break;
+        }
+        encode_one_block(bmp_buffer, msg_buffer, KEY_LENGTH);
+        bmp_write(&out_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+    } while (bytes_read > 0);
+    
+    bmp_close(&in_image);
+    bmp_close(&out_image);
+    return 1;
+}
+
+
 // Decode a message from the bmp file and store it in the message buffer
 int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t buffer_size)
+{
+    BmpImage in_image;
+
+    const int MSG_CHUNK_SIZE = KEY_LENGTH;
+    const int BMP_CHUNK_SIZE = KEY_LENGTH * 8;
+
+    char msg_buffer[MSG_CHUNK_SIZE + 1];
+    char bmp_buffer[MSG_CHUNK_SIZE * 8 + 1];
+
+    if (!bmp_open_read(&in_image, in_file)) {
+        return 0;
+    }
+
+    // Compute number of possible bytes to read
+    size_t num_bytes_to_read;
+    size_t max_msg_len = compute_available_space(in_image.info.datasize);
+    if (buffer_size > max_msg_len) {
+        num_bytes_to_read = max_msg_len;
+    } else {
+        num_bytes_to_read = buffer_size;
+    }
+
+    // The entire message can definitely fit, with possible padding at the end...
+    size_t num_blocks_in_msg = num_bytes_to_read / KEY_LENGTH;
+    size_t i;
+    char *buffer_ptr = buffer;
+    for (i = 0; i < num_blocks_in_msg; i++)
+    {
+        // Read in a chunk of pixel data to decode
+        bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+
+        // Decode the chunk of pixel data into the message buffer
+        decode_one_block(msg_buffer, bmp_buffer, KEY_LENGTH);
+
+        // write the decoded piece of message to the output buffer
+        memcpy(buffer_ptr, msg_buffer, KEY_LENGTH);
+        buffer_ptr += KEY_LENGTH;
+    }
+
+    bmp_close(&in_image);
+    return 1;
+}
+
+void encode_one_block(char *dest, const char *src, size_t src_len) 
+{
+    // shift data into the destination
+    size_t i;
+    for (i = 0; i < src_len ; i++) {
+        uint8_t byte_out = (uint8_t)src[i];
+        shift_out_byte_to_array((uint8_t*)dest, byte_out, i * 8);
+    }
+}
+
+void decode_one_block(char *dest, const char *src, size_t src_len)
+{
+    // shift data out of the source
+    size_t i;
+    for (i = 0; i < src_len ; i++) {
+        uint8_t byte_in = 0;
+        shift_in_byte_from_array(&byte_in, (uint8_t*)src, i * 8);
+        dest[i] = byte_in;
+    }
+}
+
+void copy_one_block_of_message(char *buffer, const char *src) {
+    size_t i;
+    size_t bytes_to_copy = strlen(src);
+    if (bytes_to_copy > KEY_LENGTH) {
+        bytes_to_copy = KEY_LENGTH;
+    }
+    for (i = 0; i < bytes_to_copy; i++) {
+        if (src[i] == '\0') {
+            break;
+        }
+        buffer[i] = src[i];
+    }
+
+    // add the padding bytes if needed (ie, bytes_to_copy < KEY_LENGTH)
+    while (i < KEY_LENGTH) {
+        buffer[i] = PADDING_CHARACTER;
+        i++;
+    }
+}
+
+
+int __steg_decode_bmp_old(const char *in_file, const char *key, char *buffer, size_t buffer_size)
 {
 
     // Read in the BMP file
@@ -186,6 +339,9 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
     bmp_destroy(&bmp); 
     return 1;
 }
+
+
+
 
 int steg_encode_wav(const char *in_file, const char *out_file, char *key, char *message, size_t message_size)
 {

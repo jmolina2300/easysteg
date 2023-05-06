@@ -40,7 +40,12 @@ size_t compute_available_space(size_t file_size);
 char *get_encrypted_message(char *original_msg, char *key);
 
 
+// Encode (Destination, Source, Length)
+void encode_one_block(char *dest, const char *src, size_t src_len);
+void decode_one_block(char *dest, const char *src, size_t src_len);
 
+
+void copy_one_block_of_message(char *buffer, const char *src) ;
 
 
 

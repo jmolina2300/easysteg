@@ -326,18 +326,23 @@ void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
     
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
+void __fastcall TFormMain::FitImage(bool fitImage)
 {
-    if (CheckBox1->Checked) {
+    if (fitImage == true) {
+        CheckBox1->Checked = true;
         StegImage->Proportional = true;
         StegImage->Align = alClient;
     } else {
-
+        CheckBox1->Checked = false;  
         StegImage->Proportional = false;
         StegImage->Align = alNone;
     }
-    StegImage->Repaint();    
+    StegImage->Repaint();
+}
+
+void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
+{
+    FitImage(CheckBox1->Checked);    
 }
 //---------------------------------------------------------------------------
 
@@ -415,6 +420,12 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
     free(decodeBuffer);
 
 
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::FormCreate(TObject *Sender)
+{
+    FitImage(true);    
 }
 //---------------------------------------------------------------------------
 

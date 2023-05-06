@@ -51,11 +51,14 @@ __published:	// IDE-managed Components
     void __fastcall btnEncodeClick(TObject *Sender);
     void __fastcall CheckBox1Click(TObject *Sender);
     void __fastcall btnDecodeClick(TObject *Sender);
+    void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
     size_t availableStegSpace;
     FileType __fastcall GetFileType(const AnsiString &s);
     void __fastcall DisplaySoundFile(const AnsiString &s);
     void __fastcall DisplayImageFile(const AnsiString &s);
+
+    void __fastcall FitImage(bool yes);
 
     void __fastcall EncodeSoundFile(const AnsiString &message, const AnsiString &key);
     void __fastcall EncodeImageFile(const AnsiString &message, const AnsiString &key);
