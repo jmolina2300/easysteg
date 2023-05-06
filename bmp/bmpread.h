@@ -7,7 +7,9 @@
 
 #define SIZE_BMP_HEADER 14
 #define SIZE_DIB_HEADER 40
-#define SIZE_PIXEL_24BIT 3
+#define SIZE_PIXEL_24BIT  3
+#define SIZE_PIXEL_16BIT  2
+#define SIZE_PIXEL_8BIT   1
 
 
 // BMP header structure
@@ -48,18 +50,28 @@ typedef struct {
   DibHeader      info;
   Pixel         *data;
   uint8_t       *data_raw;
+  FILE *fp;
 }  BmpImage;
 
 
 void bmp_create_header(BmpImage *image, int width, int height, int bits);
-
 int bmp_create_canvas(BmpImage *image, uint32_t color);
-
-
 int bmp_write_to_file(BmpImage *image, const char *filename);
 int bmp_read_from_file(BmpImage *image, const char *filename);
-
 void bmp_destroy(BmpImage *image);
+
+
+
+
+// Heap-free functions
+int bmp_open_read(BmpImage *image, const char *filename);
+int bmp_open_write(BmpImage *image, const char *filename);
+
+int bmp_close(BmpImage *image);
+size_t bmp_read(BmpImage *image, void *buffer, size_t elementSize, size_t numElements);
+size_t bmp_write(BmpImage *image, void *buffer, size_t elementSize, size_t numElements);
+
+void bmp_copy_header(BmpImage *dest, BmpImage *src);
 
 
 

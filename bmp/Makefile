@@ -1,18 +1,25 @@
-CC=gcc -Wall
-CFLAGS= -g
 
-all: test_bmp_create test_bmp_rewrite
+# Compiler flags
+CFLAGS = -g -Wall -O0 -std=c99
 
-bmpread.o: bmpread.c
-	$(CC) $(CFLAGS) -c bmpread.c
 
-test_bmp_create: test_bmp_create.o bmpread.o
-	$(CC) $(CFLAGS) -o test_bmp_create.x test_bmp_create.o bmpread.o
+# Linker flags
+LDFLAGS = 
 
-test_bmp_rewrite: test_bmp_rewrite.o bmpread.o
-	$(CC) $(CFLAGS) -o test_bmp_rewrite.x test_bmp_rewrite.o bmpread.o
+
+SOURCES = bmpread.c test_bmp.c
+OBJECTS = $(SOURCES:.c=.o)
+TARGET = test_bmp
+
+
+
+$(TARGET) : $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+
+
+.PHONY: clean
 
 
 clean:
-	rm -fR *.o
-	rm -fR *.x
+	@rm -f $(TARGET) $(OBJECTS) core

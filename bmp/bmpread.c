@@ -2,6 +2,9 @@
 
 
 
+
+
+
 void bmp_create_header(BmpImage *image, int width, int height, int bits)
 {
   image->header.signature[0] = 'B';
@@ -49,7 +52,7 @@ void clear_header_info(BmpImage *image)
   image->info.importantcolors = 0;
 }
 
-void write_header(BmpImage *image, FILE *file)
+void write_header_to_file(BmpImage *image, FILE *file)
 {
   // Write the header (manually)
   fwrite( &image->header.signature, 2, 1, file);
@@ -74,7 +77,7 @@ void write_header(BmpImage *image, FILE *file)
   fseek(file, image->header.offset, SEEK_SET);
 }
 
-void read_header(BmpImage *image, FILE *file)
+void read_header_from_file(BmpImage *image, FILE *file)
 {
   // reset the file pointer to the beginning
   fseek(file, 0, SEEK_SET);
@@ -166,7 +169,7 @@ int bmp_write_to_file(BmpImage *image, const char *filename)
     return 0;
   }
 
-  write_header(image, file);
+  write_header_to_file(image, file);
 
 
   // Write the pixel data
@@ -196,8 +199,8 @@ int is_valid_bmp_header(BmpImage *image)
       // Invalid DIB header size  
       return 0;
   }
-  if (image->info.bits != 24) {
-      // Unsupported bits per pixel (only 24 is supported)
+  if (!(image->info.bits == 24 || image->info.bits == 16 || image->info.bits == 16)) {
+      // Unsupported bits per pixel 
       return 0;
   }
   if (image->info.compression != 0) {
@@ -235,7 +238,7 @@ int bmp_read_from_file(BmpImage *image, const char *filename)
   }
 
   // Read the header
-  read_header(image, file);
+  read_header_from_file(image, file);
   if (!is_valid_bmp_header(image)) {
       fclose(file);
       return 0;
@@ -258,7 +261,6 @@ int bmp_read_from_file(BmpImage *image, const char *filename)
 }
 
 
-
 void bmp_destroy(BmpImage *image)
 {
   free(image->data);
@@ -266,6 +268,82 @@ void bmp_destroy(BmpImage *image)
   image->data_raw = NULL;
 
   clear_header_info(image);
+}
+
+
+
+
+/*****************************************************************************
+ * Heapless BMP functions
+ ****************************************************************************/
+int bmp_open_read(BmpImage *image, const char *filename)
+{
+    // Open the file pointer
+    FILE *fp = fopen(filename, "rb");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "Error: Unable to open file %s\n", filename);
+        return 0;
+    }
+
+    // Read the header
+    read_header_from_file(image, fp);
+
+    if (!is_valid_bmp_header(image))
+    {
+        fprintf(stderr, "Error: Invalid BMP file %s\n", filename);
+        fclose(fp);
+        return 0;
+    }
+    fseek(fp, image->header.offset, SEEK_SET);
+    image->fp = fp;
+
+    // File is ready for use
+    return 1;
+}
+
+int bmp_open_write(BmpImage *image, const char *filename)
+{
+    FILE *fp = fopen(filename, "wb");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "Error: Unable to open file %s\n", filename);
+        return 0;
+    }
+
+    // Write the header (assumes that you already filled in the fields correctly!)
+    write_header_to_file(image, fp);
+    image->fp = fp;
+
+    // File is ready for use
+    return 1;
+}
+
+int bmp_close(BmpImage *image)
+{
+    fclose(image->fp);
+    image->fp = NULL;
+    clear_header_info(image);
+    return 1;
+}
+
+
+void bmp_copy_header(BmpImage *dest, BmpImage *src)
+{
+    // Copy the header information
+    dest->header = src->header;
+    dest->info = src->info;
+}
+
+
+size_t bmp_read(BmpImage *image, void *buffer, size_t elementSize, size_t numElements)
+{
+    return fread(buffer, elementSize, numElements, image->fp);
+}
+
+size_t bmp_write(BmpImage *image, void *buffer, size_t elementSize, size_t numElements)
+{
+    return fwrite(buffer, elementSize, numElements, image->fp);
 }
 
 
