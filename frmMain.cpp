@@ -388,7 +388,7 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
         return;
     }
     
-    int decodeSuccess;
+    int decodeSuccess = 0;
     if (fileType == T_SOUND)
     {
         decodeSuccess = steg_decode_wav(

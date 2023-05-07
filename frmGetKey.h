@@ -17,7 +17,9 @@ __published:	// IDE-managed Components
     TButton *btnOK;
     void __fastcall btnOKClick(TObject *Sender);
     void __fastcall FormShow(TObject *Sender);
+    void __fastcall tbxKeyKeyPress(TObject *Sender, char &Key);
 private:	// User declarations
+    void __fastcall confirmKeyEntry();
 public:		// User declarations
     __fastcall TFormGetKey(TComponent* Owner);
     size_t KeyLength;
