@@ -141,6 +141,22 @@ int __steg_encode_bmp_old(const char *in_file, const char *out_file, char *key, 
     return 1;
 }
 
+void copy_remaining_bmp_data(BmpImage *in_image, BmpImage *out_image)
+{
+    const int ZERO_BLOCK_SIZE = 1024;
+    char zero_buffer[ZERO_BLOCK_SIZE];
+    char bmp_buffer[ZERO_BLOCK_SIZE * 8];
+    size_t bytes_read = bmp_read(in_image, bmp_buffer, 1, sizeof(bmp_buffer));
+    memset(zero_buffer, 0, ZERO_BLOCK_SIZE);
+    while (bytes_read > 0)
+    {
+        encode_one_block(bmp_buffer, zero_buffer, sizeof(zero_buffer));
+        bmp_write(out_image, bmp_buffer, 1, bytes_read);
+        bytes_read = bmp_read(in_image, bmp_buffer, 1, sizeof(bmp_buffer));
+    }
+}
+
+
 // Encode a message into a BMP file
 int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *msg, size_t msg_len)
 {   
@@ -185,24 +201,18 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
 
         // Read in a chunk of pixel data to encode into
         bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+
+        // Encrypt the message block
+        steg_encrypt_block(msg_buffer,key, KEY_LENGTH);
+
+        // Encode the message block into the bmp buffer
         encode_one_block(bmp_buffer, msg_buffer, KEY_LENGTH);
 
         // Write the chunk of pixel data to the output file
         bmp_write(&out_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
     }
 
-    // Now, encode zeros into to the remaining LSBs of the pixel data
-    memset(msg_buffer, 0, KEY_LENGTH);
-    size_t bytes_read = 0;
-    do {
-        bytes_read = bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
-        if (bytes_read == 0) {
-            break;
-        }
-
-        encode_one_block(bmp_buffer, msg_buffer, KEY_LENGTH);
-        bmp_write(&out_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
-    } while (bytes_read > 0);
+    copy_remaining_bmp_data(&in_image, &out_image);
 
     bmp_close(&in_image);
     bmp_close(&out_image);
@@ -255,6 +265,7 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
 
         // Decode the chunk of pixel data into the message buffer
         decode_one_block(msg_buffer, bmp_buffer, KEY_LENGTH);
+        steg_decrypt_block(msg_buffer,key,KEY_LENGTH);
 
 
         // write the decoded piece of message to the output buffer
