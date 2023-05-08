@@ -8,6 +8,14 @@ size_t compute_available_space(size_t file_size)
     return available_space;
 }
 
+size_t mystrnlen(const char *src, size_t max_len)
+{
+    size_t i = 0;
+    while (src[i] != '\0' && i < max_len)
+        i++;
+    return i;
+}
+
 /**
  * @brief 
  * 
@@ -157,16 +165,15 @@ void copy_remaining_bmp_data(BmpImage *in_image, BmpImage *out_image)
 }
 
 
+
+
 // Encode a message into a BMP file
 int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *msg, size_t msg_len)
-{   
+{
     BmpImage in_image;
     BmpImage out_image;
 
-    const int BMP_CHUNK_SIZE = KEY_LENGTH * 8;
-
-    char msg_buffer[KEY_LENGTH + 1];
-    char bmp_buffer[BMP_CHUNK_SIZE + 1];
+    
 
     if (!bmp_open_read(&in_image, in_file)) {
         return 0;
@@ -186,31 +193,69 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     }
     // The entire message can definitely fit, with possible padding at the end
 
-    // Compute the number of blocks we need to write
+    // Compute the number of blocks
     size_t num_blocks_in_msg;
     if ((msg_len % KEY_LENGTH) != 0) {
         num_blocks_in_msg = (msg_len / KEY_LENGTH) + 1;
     } else {
         num_blocks_in_msg = (msg_len / KEY_LENGTH);
     }
-    size_t i;
-    for (i = 0; i < num_blocks_in_msg; i++)
-    {
-        char *current_msg_block = msg + (i * KEY_LENGTH);
-        copy_one_block_of_message(msg_buffer, current_msg_block);
 
-        // Read in a chunk of pixel data to encode into
-        bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+    const size_t MSG_CHUNK_SIZE = KEY_LENGTH * 8 * 8 ;
+    char msg_chunk_buffer[MSG_CHUNK_SIZE + 1];
+    char bmp_buffer[MSG_CHUNK_SIZE * 8 + 1];
 
-        // Encrypt the message block
-        steg_encrypt_block(msg_buffer,key, KEY_LENGTH);
-
-        // Encode the message block into the bmp buffer
-        encode_one_block(bmp_buffer, msg_buffer, KEY_LENGTH);
-
-        // Write the chunk of pixel data to the output file
-        bmp_write(&out_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
+    // Compute the number of chunks in the message
+    size_t num_chunks_can_possibly_read = compute_available_space(in_image.info.datasize) / MSG_CHUNK_SIZE;
+    size_t num_chunks_in_msg = 1 + (num_blocks_in_msg / 8);
+    size_t num_chunks_to_process;
+    if (num_chunks_in_msg > num_chunks_can_possibly_read) {
+        num_chunks_to_process = num_chunks_can_possibly_read;
+    } else {
+        num_chunks_to_process = num_chunks_in_msg;
     }
+
+    // Get a pointer to the first chunk
+    size_t chunk = 0;
+    char *current_msg_chunk = msg + (chunk * MSG_CHUNK_SIZE);
+    int is_empty_chunk = (*current_msg_chunk == 0);
+
+    while (chunk < num_chunks_to_process && !is_empty_chunk)
+    {
+        size_t num_bytes_read = bmp_read(&in_image, bmp_buffer, 1, MSG_CHUNK_SIZE * 8);
+        if (num_bytes_read == 0)
+            break;
+
+        // Compute the number of blocks in this chunk
+        size_t chunk_len = mystrnlen(current_msg_chunk, MSG_CHUNK_SIZE);
+        size_t num_blocks_in_chunk;
+        if ((chunk_len % KEY_LENGTH) != 0) {
+            num_blocks_in_chunk = 1 + (chunk_len / KEY_LENGTH);
+        } else {
+            num_blocks_in_chunk = (chunk_len / KEY_LENGTH);
+        }
+
+        // Copy the chunk
+        copy_one_chunk_of_message(msg_chunk_buffer, current_msg_chunk, MSG_CHUNK_SIZE);
+
+        // Process all of the blocks within this chunk
+        for (size_t block = 0; block < num_blocks_in_chunk; block++)
+        {
+            char *current_msg_block = msg_chunk_buffer + (block * KEY_LENGTH);
+            steg_encrypt_block(current_msg_block, key, KEY_LENGTH);  
+        }
+
+        // Encode the entire chunk into the bmp buffer
+        encode_one_block(bmp_buffer, msg_chunk_buffer, MSG_CHUNK_SIZE);
+        bmp_write(&out_image, bmp_buffer, 1, num_bytes_read);
+
+        // Bring in the next chunk from the message
+        chunk++;
+        current_msg_chunk = msg + (chunk * MSG_CHUNK_SIZE);
+        is_empty_chunk = (*current_msg_chunk == 0);
+
+    }
+
 
     copy_remaining_bmp_data(&in_image, &out_image);
 
@@ -218,6 +263,8 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     bmp_close(&out_image);
     return 1;
 }
+
+
 
 
 int contains_null(const char *block)
@@ -269,7 +316,7 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
 
 
         // write the decoded piece of message to the output buffer
-        copy_one_block_of_message(buffer_ptr, msg_buffer);
+        strncpy(buffer_ptr, msg_buffer, KEY_LENGTH);
         buffer_ptr += KEY_LENGTH;
 
         reached_end = (block_num >= num_blocks) || (contains_null(msg_buffer));
@@ -302,25 +349,49 @@ void decode_one_block(char *dest, const char *src, size_t src_len)
     }
 }
 
-void copy_one_block_of_message(char *buffer, const char *src) {
+// We need a more generic form of this
+void copy_one_block_of_message(char *buffer, const char *src, size_t block_len)
+{
     size_t i;
     size_t bytes_to_copy = strlen(src);
-    if (bytes_to_copy > KEY_LENGTH) {
-        bytes_to_copy = KEY_LENGTH;
+    if (bytes_to_copy > block_len) {
+        bytes_to_copy = block_len;
     }
     for (i = 0; i < bytes_to_copy; i++) {
-        if (src[i] == '\0') {
-            break;
-        }
         buffer[i] = src[i];
     }
 
-    // add the padding bytes if needed (ie, bytes_to_copy < KEY_LENGTH)
-    while (i < KEY_LENGTH) {
+    // add the padding bytes if needed (ie, bytes_to_copy < block_len)
+    while (i < block_len) {
         buffer[i] = PADDING_CHARACTER;
         i++;
     }
 }
+
+void copy_one_chunk_of_message(char *dest, const char *src, size_t chunk_len)
+{
+    size_t i;
+    size_t bytes_to_copy = strlen(src);
+    if (bytes_to_copy > chunk_len) {
+        bytes_to_copy = chunk_len;
+    }
+    for (i = 0; i < bytes_to_copy; i++) {
+        dest[i] = src[i];
+    }
+
+    // pad with spaces up to a block boundary
+    size_t num_bytes_to_pad = KEY_LENGTH - (bytes_to_copy % KEY_LENGTH);
+    while (i < bytes_to_copy + num_bytes_to_pad) {
+        dest[i] = PADDING_CHARACTER;
+        i++;
+    }
+    // pad with zeros up to a chunk boundary
+    while(i < chunk_len) {
+        dest[i] = 0;
+        i++;
+    }
+}
+
 
 
 int __steg_decode_bmp_old(const char *in_file, const char *key, char *buffer, size_t buffer_size)
@@ -365,7 +436,6 @@ int __steg_decode_bmp_old(const char *in_file, const char *key, char *buffer, si
     bmp_destroy(&bmp); 
     return 1;
 }
-
 
 
 
