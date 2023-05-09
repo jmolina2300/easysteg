@@ -13,10 +13,16 @@ __fastcall TFormGetKey::TFormGetKey(TComponent* Owner)
     : TForm(Owner)
 {
 }
+
+void __fastcall TFormGetKey::confirmKeyEntry()
+{
+   this->KeyLength = tbxKey->Text.Length();
+   ModalResult = mrOk;
+}
 //---------------------------------------------------------------------------
 void __fastcall TFormGetKey::btnOKClick(TObject *Sender)
 {
-    this->KeyLength = tbxKey->Text.Length();
+    confirmKeyEntry();
 }
 //---------------------------------------------------------------------------
 void __fastcall TFormGetKey::FormShow(TObject *Sender)
@@ -25,3 +31,12 @@ void __fastcall TFormGetKey::FormShow(TObject *Sender)
     tbxKey->Clear();
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TFormGetKey::tbxKeyKeyPress(TObject *Sender, char &Key)
+{
+    if (Key == 13) {
+        confirmKeyEntry();
+    }
+}
+//---------------------------------------------------------------------------
+

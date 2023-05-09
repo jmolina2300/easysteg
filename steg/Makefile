@@ -2,14 +2,14 @@ CC=gcc -Wall
 CFLAGS= -g
 
 
-all: test_encode test_encode_wav
+all: test_bmp test_wav
 
 
-test_encode:
-	$(CC) $(CFLAGS) -o test_encode.x test_encode.c steg.c ../wav/wavread.c ../bmp/bmpread.c
+test_bmp:
+	$(CC) $(CFLAGS) -o test_bmp.x test_bmp.c steg.c ../wav/wavread.c ../bmp/bmpread.c
 
-test_encode_wav:
-	$(CC) $(CFLAGS) -o test_encode_wav.x test_encode_wav.c steg.c ../wav/wavread.c ../bmp/bmpread.c
+test_wav:
+	$(CC) $(CFLAGS) -o test_wav.x test_wav.c steg.c ../wav/wavread.c ../bmp/bmpread.c
 
 
 

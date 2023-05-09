@@ -180,8 +180,7 @@ void __fastcall TFormMain::DisplayImageFile(const AnsiString &fileName)
 
     BmpImage bi;
     bmp_read_from_file(&bi, fileName.c_str());
-    this->availableStegSpace = bi.info.datasize / 8;
-    this->availableStegSpace -= this->availableStegSpace % KEY_LENGTH;
+    this->availableStegSpace = compute_available_space(bi.info.datasize);
 
     // Display information about the BMP file in the text box
     AnsiString fileInfo;
@@ -326,18 +325,23 @@ void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
     
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
+void __fastcall TFormMain::FitImage(bool fitImage)
 {
-    if (CheckBox1->Checked) {
+    if (fitImage == true) {
+        CheckBox1->Checked = true;
         StegImage->Proportional = true;
         StegImage->Align = alClient;
     } else {
-
+        CheckBox1->Checked = false;  
         StegImage->Proportional = false;
         StegImage->Align = alNone;
     }
-    StegImage->Repaint();    
+    StegImage->Repaint();
+}
+
+void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
+{
+    FitImage(CheckBox1->Checked);    
 }
 //---------------------------------------------------------------------------
 
@@ -383,7 +387,7 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
         return;
     }
     
-    int decodeSuccess;
+    int decodeSuccess = 0;
     if (fileType == T_SOUND)
     {
         decodeSuccess = steg_decode_wav(
@@ -415,6 +419,12 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
     free(decodeBuffer);
 
 
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::FormCreate(TObject *Sender)
+{
+    FitImage(true);    
 }
 //---------------------------------------------------------------------------
 

@@ -37,6 +37,7 @@ object FormGetKey: TFormGetKey
     MaxLength = 8
     ParentFont = False
     TabOrder = 0
+    OnKeyPress = tbxKeyKeyPress
   end
   object btnOK: TButton
     Left = 72

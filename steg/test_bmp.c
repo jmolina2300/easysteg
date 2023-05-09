@@ -2,6 +2,16 @@
 #include <stdio.h>
 
 
+
+void get_custom_message(char *message, char *key)
+{
+    printf("Enter a message to encode: ");
+    scanf("%s", message);
+
+    printf("Enter a key: ");
+    scanf("%s", key);
+}
+
 int main(int argc, char **argv)
 {
     // Check if the user provided the correct number of arguments
@@ -16,15 +26,10 @@ int main(int argc, char **argv)
 
     char message[1000];
     char key[1000];
-    // Get the message from the user
-    printf("Enter the message to encode: ");
-    fgets(message, 1000, stdin);
 
-    // Get the key from the user
-    printf("Enter the key to use: ");
-    fgets(key, 1000, stdin);
 
-    
+    snprintf(message, 1000, "Hello world! This is my message!");
+    snprintf(key, 1000, "applepie");
 
     // Encode the message into the file
     if (steg_encode_bmp(in_file, out_file, key, message, strlen(message)))
@@ -36,7 +41,7 @@ int main(int argc, char **argv)
         printf("ERROR: failed to encode message into file %s\n", out_file);
         return -1;
     }
-    printf("Encoded message: %s\n", message);
+    printf("Encoded message: %s\n\n", message);
 
 
     // Decode the message from the file
