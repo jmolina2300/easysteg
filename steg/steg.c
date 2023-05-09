@@ -15,7 +15,54 @@ size_t mystrnlen(const char *src, size_t max_len)
         i++;
     return i;
 }
+int contains_null(const char *block)
+{
+    size_t i = 0;
+    while (block[i] != '\0' && i < KEY_LENGTH)
+        i++;
+    return (i != KEY_LENGTH);
+}
 
+void copy_one_block(char *buffer, const char *src, size_t block_len)
+{
+    size_t i;
+    size_t bytes_to_copy = strlen(src);
+    if (bytes_to_copy > block_len) {
+        bytes_to_copy = block_len;
+    }
+    for (i = 0; i < bytes_to_copy; i++) {
+        buffer[i] = src[i];
+    }
+
+    // add the padding bytes if needed (ie, bytes_to_copy < block_len)
+    while (i < block_len) {
+        buffer[i] = PADDING_CHARACTER;
+        i++;
+    }
+}
+void copy_one_chunk(char *dest, const char *src, size_t chunk_len)
+{
+    size_t i;
+    size_t bytes_to_copy = strlen(src);
+    if (bytes_to_copy > chunk_len) {
+        bytes_to_copy = chunk_len;
+    }
+    for (i = 0; i < bytes_to_copy; i++) {
+        dest[i] = src[i];
+    }
+
+    // pad with spaces up to a block boundary
+    size_t num_bytes_to_pad = KEY_LENGTH - (bytes_to_copy % KEY_LENGTH);
+    while (i < bytes_to_copy + num_bytes_to_pad) {
+        dest[i] = PADDING_CHARACTER;
+        i++;
+    }
+    // pad with zeros up to a chunk boundary
+    while(i < chunk_len) {
+        dest[i] = 0;
+        i++;
+    }
+}
 /**
  * @brief 
  * 
@@ -166,7 +213,6 @@ void copy_remaining_bmp_data(BmpImage *in_image, BmpImage *out_image)
 
 
 
-
 // Encode a message into a BMP file
 int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *msg, size_t msg_len)
 {
@@ -236,7 +282,7 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
         }
 
         // Copy the chunk
-        copy_one_chunk_of_message(msg_chunk_buffer, current_msg_chunk, MSG_CHUNK_SIZE);
+        copy_one_chunk(msg_chunk_buffer, current_msg_chunk, MSG_CHUNK_SIZE);
 
         // Process all of the blocks within this chunk
         for (size_t block = 0; block < num_blocks_in_chunk; block++)
@@ -264,19 +310,6 @@ int steg_encode_bmp(const char *in_file, const char *out_file, char *key, char *
     return 1;
 }
 
-
-
-
-int contains_null(const char *block)
-{
-    size_t i = 0;
-    while (block[i] != '\0' && i < KEY_LENGTH)
-        i++;
-    return (i != KEY_LENGTH);
-}
-
-
-
 // Decode a message from the bmp file and store it in the message buffer
 int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t buffer_size)
 {
@@ -284,8 +317,8 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
 
     const int BMP_CHUNK_SIZE = KEY_LENGTH * 8;
 
-    char msg_buffer[KEY_LENGTH + 1];
-    char bmp_buffer[BMP_CHUNK_SIZE + 1];
+    char msg_buffer[KEY_LENGTH];
+    char bmp_buffer[BMP_CHUNK_SIZE];
 
     if (!bmp_open_read(&in_image, in_file)) {
         return 0;
@@ -300,13 +333,13 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
         num_bytes_to_read = buffer_size;
     }
 
-
-    char *buffer_ptr = buffer;  // Our sliding window into the output buffer
+    // Decode the message block by block
+    char *buffer_ptr = buffer;
     int reached_end = 0;
     size_t num_blocks = num_bytes_to_read / KEY_LENGTH;
     size_t block_num = 0;
-    while (!reached_end) {
-
+    while (!reached_end)
+    {
         // Read in a chunk of pixel data to decode
         bmp_read(&in_image, bmp_buffer, 1, BMP_CHUNK_SIZE);
 
@@ -314,12 +347,11 @@ int steg_decode_bmp(const char *in_file, const char *key, char *buffer, size_t b
         decode_one_block(msg_buffer, bmp_buffer, KEY_LENGTH);
         steg_decrypt_block(msg_buffer,key,KEY_LENGTH);
 
-
         // write the decoded piece of message to the output buffer
         strncpy(buffer_ptr, msg_buffer, KEY_LENGTH);
         buffer_ptr += KEY_LENGTH;
 
-        reached_end = (block_num >= num_blocks) || (contains_null(msg_buffer));
+        reached_end = (block_num == num_blocks-1) || (contains_null(msg_buffer));
         block_num++;
     }
 
@@ -348,50 +380,6 @@ void decode_one_block(char *dest, const char *src, size_t src_len)
         dest[i] = byte_in;
     }
 }
-
-// We need a more generic form of this
-void copy_one_block_of_message(char *buffer, const char *src, size_t block_len)
-{
-    size_t i;
-    size_t bytes_to_copy = strlen(src);
-    if (bytes_to_copy > block_len) {
-        bytes_to_copy = block_len;
-    }
-    for (i = 0; i < bytes_to_copy; i++) {
-        buffer[i] = src[i];
-    }
-
-    // add the padding bytes if needed (ie, bytes_to_copy < block_len)
-    while (i < block_len) {
-        buffer[i] = PADDING_CHARACTER;
-        i++;
-    }
-}
-
-void copy_one_chunk_of_message(char *dest, const char *src, size_t chunk_len)
-{
-    size_t i;
-    size_t bytes_to_copy = strlen(src);
-    if (bytes_to_copy > chunk_len) {
-        bytes_to_copy = chunk_len;
-    }
-    for (i = 0; i < bytes_to_copy; i++) {
-        dest[i] = src[i];
-    }
-
-    // pad with spaces up to a block boundary
-    size_t num_bytes_to_pad = KEY_LENGTH - (bytes_to_copy % KEY_LENGTH);
-    while (i < bytes_to_copy + num_bytes_to_pad) {
-        dest[i] = PADDING_CHARACTER;
-        i++;
-    }
-    // pad with zeros up to a chunk boundary
-    while(i < chunk_len) {
-        dest[i] = 0;
-        i++;
-    }
-}
-
 
 
 int __steg_decode_bmp_old(const char *in_file, const char *key, char *buffer, size_t buffer_size)
@@ -556,9 +544,9 @@ int steg_decode_wav(const char *in_file, const char *key, char *buffer, size_t b
  * @brief get_padded_message
  *
  * Pads the message to make it a multiple of KEY_LENGTH
- * 
+ *
  * @param msg
- * @return char* 
+ * @return char*
  */
 char *get_padded_message(const char *msg)
 {
@@ -589,15 +577,15 @@ char *get_padded_message(const char *msg)
 
 /**
  * @brief message_fits
- * 
+ *
  * Checks to see if the message will fit in the file
- * 
+ *
  * As specified in Key Protocol V1 drawing
- * 
- * @param message_length 
- * @param proposed_file_size 
- * @param key_length 
- * @return int 
+ *
+ * @param message_length
+ * @param proposed_file_size
+ * @param key_length
+ * @return int
  */
 int message_fits(size_t message_length, size_t file_size)
 {

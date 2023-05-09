@@ -180,8 +180,7 @@ void __fastcall TFormMain::DisplayImageFile(const AnsiString &fileName)
 
     BmpImage bi;
     bmp_read_from_file(&bi, fileName.c_str());
-    this->availableStegSpace = bi.info.datasize / 8;
-    this->availableStegSpace -= this->availableStegSpace % KEY_LENGTH;
+    this->availableStegSpace = compute_available_space(bi.info.datasize);
 
     // Display information about the BMP file in the text box
     AnsiString fileInfo;

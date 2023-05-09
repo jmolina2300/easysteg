@@ -45,8 +45,8 @@ void encode_one_block(char *dest, const char *src, size_t src_len);
 void decode_one_block(char *dest, const char *src, size_t src_len);
 
 
-void copy_one_block_of_message(char *buffer, const char *src, size_t block_len) ;
-void copy_one_chunk_of_message(char *dest, const char *src, size_t chunk_len);
+void copy_one_block(char *buffer, const char *src, size_t block_len);
+void copy_one_chunk(char *dest, const char *src, size_t chunk_len);
 
 
 
