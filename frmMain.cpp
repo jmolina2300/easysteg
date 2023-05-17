@@ -105,8 +105,7 @@ void __fastcall TFormMain::DisplaySoundFile(const AnsiString &fileName)
     WaveFile wi;
     bool acceptableFile = wav_read_from_file(&wi, fileName.c_str() );
     if (acceptableFile) {
-        this->availableStegSpace = wi.info.numSamples / 8;
-        this->availableStegSpace -= this->availableStegSpace % KEY_LENGTH;
+        availableStegSpace = compute_available_space(wi.info.numSamples);
 		AnsiString fileInfo;
 		fileInfo.printf(" Name: %s\n"
 						" Sample Rate: %d\n"
@@ -120,7 +119,7 @@ void __fastcall TFormMain::DisplaySoundFile(const AnsiString &fileName)
 						wi.info.numChannels,
 						wi.info.duration,
 						wi.info.numSamples,
-                        this->availableStegSpace);
+                        availableStegSpace);
         tbxFileInfo->Text = fileInfo;
     } else {
         Application->MessageBox("Unsupported WAV format!",
@@ -180,7 +179,7 @@ void __fastcall TFormMain::DisplayImageFile(const AnsiString &fileName)
 
     BmpImage bi;
     bmp_read_from_file(&bi, fileName.c_str());
-    this->availableStegSpace = compute_available_space(bi.info.datasize);
+    availableStegSpace = compute_available_space(bi.info.datasize);
 
     // Display information about the BMP file in the text box
     AnsiString fileInfo;
@@ -197,7 +196,7 @@ void __fastcall TFormMain::DisplayImageFile(const AnsiString &fileName)
 					bi.header.filesize,
 					bi.info.datasize,
 					bi.info.width * bi.info.height * 3,
-                    this->availableStegSpace);
+                    availableStegSpace);
     tbxFileInfo->Text = fileInfo;
 
     bmp_destroy(&bi);
@@ -218,7 +217,7 @@ void __fastcall TFormMain::btnOpenClick(TObject *Sender)
     }
     AnsiString chosenFileName = OpenDialog1->FileName;
     FileType fileType = GetFileType(chosenFileName);
-    this->availableStegSpace = 0; // Reset available space (we dont know it yet)
+    availableStegSpace = 0; // Reset available space (we dont know it yet)
     if (fileType == T_SOUND) {
         DisplaySoundFile(chosenFileName);
     } else if (fileType == T_IMAGE) {
@@ -234,8 +233,6 @@ void __fastcall TFormMain::btnOpenClick(TObject *Sender)
 
 }
 //---------------------------------------------------------------------------
-
-
 
 
 void __fastcall TFormMain::EncodeImageFile(const AnsiString &message, const AnsiString &key)
@@ -267,6 +264,7 @@ void __fastcall TFormMain::EncodeImageFile(const AnsiString &message, const Ansi
     }
 
 }
+//---------------------------------------------------------------------------
 
 void __fastcall TFormMain::EncodeSoundFile(const AnsiString &message, const AnsiString &key)
 {
@@ -298,6 +296,39 @@ void __fastcall TFormMain::EncodeSoundFile(const AnsiString &message, const Ansi
 
 void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
 {
+    Encode();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
+{
+    Decode();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::FitImage(bool fitImage)
+{
+    if (fitImage == true) {
+        CheckBox1->Checked = true;
+        StegImage->Proportional = true;
+        StegImage->Align = alClient;
+    } else {
+        CheckBox1->Checked = false;  
+        StegImage->Proportional = false;
+        StegImage->Align = alNone;
+    }
+    StegImage->Repaint();
+}
+
+void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
+{
+    FitImage(CheckBox1->Checked);    
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::Encode()
+{
     // Get the secret message to encode from the user
     FormEncode->SetMaxMessageSize(availableStegSpace);
     FormEncode->ShowModal();
@@ -322,32 +353,10 @@ void __fastcall TFormMain::btnEncodeClick(TObject *Sender)
     } else {
         ShowMessage("What kind of abomination is this?");
     }
-    
-}
-//---------------------------------------------------------------------------
-void __fastcall TFormMain::FitImage(bool fitImage)
-{
-    if (fitImage == true) {
-        CheckBox1->Checked = true;
-        StegImage->Proportional = true;
-        StegImage->Align = alClient;
-    } else {
-        CheckBox1->Checked = false;  
-        StegImage->Proportional = false;
-        StegImage->Align = alNone;
-    }
-    StegImage->Repaint();
-}
-
-void __fastcall TFormMain::CheckBox1Click(TObject *Sender)
-{
-    FitImage(CheckBox1->Checked);    
 }
 //---------------------------------------------------------------------------
 
-
-
-void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
+void __fastcall TFormMain::Decode()
 {
     AnsiString chosenFileName = tbxFileName->Text;
     FileType fileType = GetFileType(chosenFileName);
@@ -366,15 +375,16 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
 #endif DEBUG_STEG
 
     // Get the key from the user
-    FormGetKey->ShowModal();
-    if (FormGetKey->ModalResult != mrOk) {
-        return;
-    }
-    if (FormGetKey->KeyLength < KEY_LENGTH) {
+    do {
+        FormGetKey->ShowModal();
+        if (FormGetKey->ModalResult != mrOk) {
+            return;
+        }
+        if (FormGetKey->KeyLength < KEY_LENGTH) {
         Application->MessageBox("Key too short!\n\n",
-                                "Error", MB_OK | MB_ICONASTERISK);
-        return;
-    }
+                                    "Error", MB_OK | MB_ICONASTERISK);
+        }
+    } while (FormGetKey->KeyLength < KEY_LENGTH);
 
     AnsiString key;
     key = FormGetKey->tbxKey->Text;
@@ -417,14 +427,28 @@ void __fastcall TFormMain::btnDecodeClick(TObject *Sender)
     }
 
     free(decodeBuffer);
-
-
 }
+
+
 //---------------------------------------------------------------------------
 
 void __fastcall TFormMain::FormCreate(TObject *Sender)
 {
-    FitImage(true);    
+    FitImage(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::FormKeyDown(TObject *Sender, WORD &Key,
+      TShiftState Shift)
+{
+    if (Shift.Contains(ssCtrl)) {
+        if (Key == 'E') {
+            Encode();
+        }
+        else if(Key == 'D') {
+            Decode();
+        }
+    }
 }
 //---------------------------------------------------------------------------
 
