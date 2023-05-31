@@ -47,6 +47,8 @@ __published:	// IDE-managed Components
     TPanel *Panel3;
     TCheckBox *CheckBox1;
     TLabel *Label3;
+    TMenuItem *Help1;
+    TMenuItem *btnAbout;
     void __fastcall btnOpenClick(TObject *Sender);
     void __fastcall btnEncodeClick(TObject *Sender);
     void __fastcall CheckBox1Click(TObject *Sender);
@@ -54,6 +56,7 @@ __published:	// IDE-managed Components
     void __fastcall FormCreate(TObject *Sender);
     void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
           TShiftState Shift);
+    void __fastcall btnAboutClick(TObject *Sender);
 private:	// User declarations
     size_t availableStegSpace;
     FileType __fastcall GetFileType(const AnsiString &s);
@@ -67,6 +70,8 @@ private:	// User declarations
 
     void __fastcall EncodeSoundFile(const AnsiString &message, const AnsiString &key);
     void __fastcall EncodeImageFile(const AnsiString &message, const AnsiString &key);
+
+    void __fastcall TFormMain::getVersionNumber(int *versionNumber);
 public:		// User declarations
     __fastcall TFormMain(TComponent* Owner);
 };

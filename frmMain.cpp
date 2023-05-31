@@ -452,3 +452,49 @@ void __fastcall TFormMain::FormKeyDown(TObject *Sender, WORD &Key,
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TFormMain::getVersionNumber(int *versionNumber)
+{
+    HMODULE hModule = GetModuleHandle(NULL);
+    TCHAR szPath[MAX_PATH];
+    GetModuleFileName(hModule, szPath, MAX_PATH);
+    DWORD dwHandle;
+    DWORD dwSize = GetFileVersionInfoSize(szPath, &dwHandle);
+    if (dwSize > 0)
+    {
+        BYTE* pVersionInfo = new BYTE[dwSize];
+        if (GetFileVersionInfo(szPath, dwHandle, dwSize, pVersionInfo))
+        {
+            UINT uLen;
+            VS_FIXEDFILEINFO* pFixedFileInfo;
+            if (VerQueryValue(pVersionInfo, "\\", (LPVOID*)&pFixedFileInfo, &uLen))
+            {
+                versionNumber[0] = HIWORD(pFixedFileInfo->dwFileVersionMS);
+                versionNumber[1] = LOWORD(pFixedFileInfo->dwFileVersionMS);
+                versionNumber[2] = HIWORD(pFixedFileInfo->dwFileVersionLS);
+                versionNumber[3] = LOWORD(pFixedFileInfo->dwFileVersionLS);
+            }
+        }
+        delete[] pVersionInfo;
+    }
+}
+void __fastcall TFormMain::btnAboutClick(TObject *Sender)
+{
+    int versionNum[4] = {0xff, 0xff, 0xff, 0xff};
+    getVersionNumber(versionNum);
+
+    AnsiString aboutMsg;
+    aboutMsg.printf("EasySteg    v%d.%d.%d\n\n"
+                    "Build time: %s\n",
+                    
+                    versionNum[0],
+                    versionNum[1],
+                    versionNum[2],
+                    __DATE__);
+    AnsiString aboutCaption;
+    aboutCaption = "About " + this->Caption;
+    Application->MessageBox(aboutMsg.c_str(), aboutCaption.c_str(),
+                            MB_OK | MB_ICONINFORMATION);
+}
+//---------------------------------------------------------------------------
+

@@ -13,6 +13,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     try
     {
          Application->Initialize();
+         Application->Title = "EasySteg";
          Application->CreateForm(__classid(TFormMain), &FormMain);
          Application->CreateForm(__classid(TFormEncode), &FormEncode);
          Application->CreateForm(__classid(TFormDecode), &FormDecode);
